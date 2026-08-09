@@ -185,6 +185,336 @@
     }, 3600);
   }
 
+  function demoFrame(title, note, target, cause, elimination, labels, givens) {
+    return {
+      title: title,
+      note: note,
+      target: target || [],
+      cause: cause || [],
+      elimination: elimination || [],
+      labels: labels || {},
+      givens: givens || {}
+    };
+  }
+
+  var techniqueExamples = {
+    "Naked Single": {
+      summary: "One cell has only one candidate left.",
+      frames: [demoFrame("The last candidate", "R5C5 can only be 5, so place 5 there.", [[4, 4]], [], [], {"4,4": "5"}, {"0,0": "5", "0,1": "3", "1,0": "6", "3,3": "8"})]
+    },
+    "Hidden Single": {
+      summary: "A digit has only one possible cell in its row, column, or box.",
+      frames: [demoFrame("The only 7 in Box 3", "In the highlighted box, only R2C8 includes candidate 7. Every other empty cell has a candidate list without 7, so place 7 in R2C8.", [[1, 7]], [], [], {"0,6": "1,2", "0,7": "2,4", "0,8": "2,4,8", "1,6": "2,3", "1,7": "7", "1,8": "2,3,4", "2,6": "1,2", "2,8": "2,4"})]
+    },
+    "Naked Pair": {
+      summary: "Two cells in a unit contain the same two candidates.",
+      frames: [demoFrame("A locked pair", "R2C2 and R2C5 are {2, 8}; remove 2 and 8 from the other cells in Row 2.", [], [[1, 1], [1, 4]], [[1, 0], [1, 7]], {"1,1": "{2,8}", "1,4": "{2,8}", "1,0": "-2/8", "1,7": "-2/8"}, {"0,0": "5", "0,3": "3", "2,2": "9"})]
+    },
+    "Naked Triple": {
+      summary: "Three cells collectively contain only three candidates.",
+      frames: [demoFrame("Three cells, three digits", "The cells in Row 4 contain only {1, 4, 9} between them, so those candidates leave the rest of the row.", [], [[3, 1], [3, 4], [3, 7]], [[3, 0], [3, 3], [3, 8]], {"3,1": "{1,4}", "3,4": "{1,9}", "3,7": "{4,9}", "3,0": "-1/4/9", "3,3": "-1/4/9", "3,8": "-1/4/9"}, {"2,0": "8", "4,4": "6"})]
+    },
+    "Naked Quad": {
+      summary: "Four cells collectively contain only four candidates.",
+      frames: [demoFrame("Four-cell lock", "These four cells use only {2, 3, 6, 9}; remove those candidates from every other cell in the unit.", [], [[4, 0], [4, 2], [4, 5], [4, 8]], [[4, 1], [4, 3], [4, 7]], {"4,0": "{2,3}", "4,2": "{2,6}", "4,5": "{6,9}", "4,8": "{3,9}", "4,1": "-2/3/6/9", "4,3": "-2/3/6/9", "4,7": "-2/3/6/9"}, {"3,3": "7", "5,5": "1"})]
+    },
+    "Hidden Pair": {
+      summary: "Two digits are restricted to the same two cells.",
+      frames: [demoFrame("The hidden pair", "Digits 3 and 6 can appear only in R6C3 and R6C6, so remove every other candidate from those cells.", [[5, 2], [5, 5]], [[5, 2], [5, 5]], [[5, 1], [5, 4], [5, 7]], {"5,2": "{3,6}", "5,5": "{3,6}", "5,1": "×3/6", "5,4": "×3/6", "5,7": "×3/6"}, {"4,0": "8", "4,8": "2"})]
+    },
+    "Hidden Triple": {
+      summary: "Three digits are restricted to three cells in a unit.",
+      frames: [demoFrame("Three hidden digits", "Digits 1, 5, and 8 appear only in these three cells; keep those digits and remove the rest.", [[6, 1], [6, 4], [6, 7]], [[6, 1], [6, 4], [6, 7]], [[6, 0], [6, 3], [6, 8]], {"6,1": "{1,5}", "6,4": "{5,8}", "6,7": "{1,8}", "6,0": "×1/5/8", "6,3": "×1/5/8", "6,8": "×1/5/8"}, {"5,0": "4", "8,8": "9"})]
+    },
+    "Hidden Quad": {
+      summary: "Four digits are restricted to four cells in a unit.",
+      frames: [demoFrame("Four hidden digits", "Digits 1, 4, 6, and 8 are confined to these four cells, so other candidates can be removed.", [[7, 0], [7, 3], [7, 6], [7, 8]], [[7, 0], [7, 3], [7, 6], [7, 8]], [[7, 1], [7, 4], [7, 7]], {"7,0": "{1,4}", "7,3": "{4,6}", "7,6": "{6,8}", "7,8": "{1,8}", "7,1": "×1/4/6/8", "7,4": "×1/4/6/8", "7,7": "×1/4/6/8"}, {"6,4": "2", "8,2": "7"})]
+    },
+    "Pointing Pair": {
+      summary: "A box confines a digit to one row or column.",
+      frames: [demoFrame("Pointing from a box", "In Box 1, every possible 4 lies in Row 2. Remove 4 from the rest of Row 2 outside the box.", [], [[1, 0], [1, 2]], [[1, 4], [1, 6], [1, 8]], {"1,0": "4", "1,2": "4", "1,4": "-4", "1,6": "-4", "1,8": "-4"}, {"0,0": "5", "0,1": "3", "2,2": "9"})]
+    },
+    "Box-Line Reduction": {
+      summary: "A row or column confines a digit to one box.",
+      frames: [demoFrame("Reducing into a box", "Row 7 can place 8 only inside Box 7, so remove 8 from the other cells in that box.", [], [[6, 0], [6, 2]], [[7, 0], [8, 1], [8, 2]], {"6,0": "8", "6,2": "8", "7,0": "-8", "8,1": "-8", "8,2": "-8"}, {"6,4": "1", "7,4": "6"})]
+    },
+    "X-Wing": {
+      summary: "Two rows and two columns form a rectangle for one digit.",
+      frames: [
+        demoFrame("Find the rectangle", "Digit 5 appears in exactly the same two columns in Rows 2 and 7.", [], [[1, 2], [1, 7], [6, 2], [6, 7]], [], {"1,2": "5", "1,7": "5", "6,2": "5", "6,7": "5"}),
+        demoFrame("Make the eliminations", "Any other 5 in Columns 3 or 8 can be removed because one corner of the X-Wing must be true.", [], [[1, 2], [1, 7], [6, 2], [6, 7]], [[0, 2], [3, 7], [8, 2]], {"1,2": "5", "1,7": "5", "6,2": "5", "6,7": "5", "0,2": "-5", "3,7": "-5", "8,2": "-5"})
+      ]
+    },
+    "Finned X-Wing": {
+      summary: "An almost X-Wing uses a fin to force an elimination.",
+      frames: [demoFrame("The fin makes it work", "The fin cell adds the missing constraint. Whether the fin is true or false, the red candidates can be removed.", [[1, 2], [1, 7], [6, 2], [6, 7]], [[6, 3]], [[5, 7], [7, 7]], {"1,2": "5", "1,7": "5", "6,2": "5", "6,7": "5", "6,3": "fin 5", "5,7": "-5", "7,7": "-5"})]
+    },
+    "Swordfish": {
+      summary: "Three rows use three columns for one digit.",
+      frames: [demoFrame("A three-line fish", "Digit 4 is restricted to Columns 2, 5, and 8 across three rows. Remove other 4s from those columns.", [], [[0, 1], [0, 4], [1, 4], [1, 7], [2, 1], [2, 7]], [[5, 1], [7, 4], [8, 7]], {"0,1": "4", "0,4": "4", "1,4": "4", "1,7": "4", "2,1": "4", "2,7": "4", "5,1": "-4", "7,4": "-4", "8,7": "-4"})]
+    },
+    "Jellyfish": {
+      summary: "Four rows use four columns for one digit.",
+      frames: [demoFrame("A four-line fish", "Digit 7 is restricted to four columns across four rows, eliminating 7 from the remaining cells in those columns.", [], [[0, 0], [0, 3], [1, 3], [1, 6], [2, 0], [2, 8], [3, 6], [3, 8]], [[5, 0], [6, 3], [8, 6]], {"0,0": "7", "0,3": "7", "1,3": "7", "1,6": "7", "2,0": "7", "2,8": "7", "3,6": "7", "3,8": "7", "5,0": "-7", "6,3": "-7", "8,6": "-7"})]
+    },
+    "Skyscraper": {
+      summary: "Two strong links share a base, forcing an elimination.",
+      frames: [demoFrame("Two roofs, one conclusion", "At least one of the two blue roof cells must contain 6. A cell that sees both cannot contain 6.", [[1, 2], [4, 6]], [[1, 0], [1, 2], [4, 4], [4, 6]], [[3, 6]], {"1,2": "roof 6", "4,6": "roof 6", "1,0": "6", "4,4": "6", "3,6": "-6"})]
+    },
+    "Two-String Kite": {
+      summary: "A row link and column link connect through a box.",
+      frames: [demoFrame("The kite", "The two outer endpoints force one of the blue cells to be 3, so the shared red cell cannot be 3.", [[1, 1], [6, 5]], [[1, 5], [6, 1]], [[7, 7]], {"1,1": "3", "6,5": "3", "1,5": "3", "6,1": "3", "7,7": "-3"})]
+    },
+    "Simple Coloring": {
+      summary: "Alternating colors on a strong-link chain reveal a contradiction.",
+      frames: [demoFrame("Follow the colors", "The two same-color candidates see each other, so that color is impossible and its candidates can be removed.", [[1, 1], [3, 3], [5, 5]], [[1, 3], [3, 5], [5, 7]], [[4, 4]], {"1,1": "A", "3,3": "A", "5,5": "A", "1,3": "B", "3,5": "B", "5,7": "B", "4,4": "-8"})]
+    },
+    "W-Wing": {
+      summary: "Two matching bivalue cells are joined by a strong link.",
+      frames: [demoFrame("The two wings", "The wings share candidates {2, 7}; the strong link forces 7 into one wing, removing 7 from cells that see both.", [[1, 1], [6, 6]], [[3, 3], [3, 5]], [[4, 4]], {"1,1": "{2,7}", "6,6": "{2,7}", "3,3": "7", "3,5": "7", "4,4": "-7"})]
+    },
+    "XY-Wing": {
+      summary: "Three bivalue cells force an elimination through a pivot.",
+      frames: [demoFrame("The pivot and two wings", "Pivot {2,5} sees {2,7} and {5,7}; whichever value the pivot takes, 7 is forced into a wing. Remove 7 from the red cell.", [[4, 4]], [[2, 2], [6, 6]], [[4, 7]], {"4,4": "{2,5}", "2,2": "{2,7}", "6,6": "{5,7}", "4,7": "-7"})]
+    },
+    "XYZ-Wing": {
+      summary: "A three-candidate pivot and two wings share a common candidate.",
+      frames: [demoFrame("The three-value pivot", "The pivot {2,5,7} and wings force 7 into one of the blue cells, eliminating 7 from the shared red cell.", [[4, 4]], [[2, 2], [6, 6]], [[4, 7]], {"4,4": "{2,5,7}", "2,2": "{2,7}", "6,6": "{5,7}", "4,7": "-7"})]
+    },
+    "XY-Chain": {
+      summary: "A chain of bivalue cells links the same candidate at both ends.",
+      frames: [demoFrame("Link the chain", "The chain starts and ends with 4, so at least one endpoint is 4. Any cell seeing both endpoints cannot contain 4.", [[1, 1], [3, 3], [5, 5], [7, 7]], [], [[4, 4]], {"1,1": "{4,6}", "3,3": "{6,9}", "5,5": "{9,2}", "7,7": "{2,4}", "4,4": "-4"})]
+    },
+    "Unique Rectangle": {
+      summary: "A rectangle pattern prevents a puzzle from having two solutions.",
+      frames: [
+        demoFrame("The deadly rectangle", "Three corners are bivalue {1,9}; the fourth corner must contain an extra candidate to avoid two solutions.", [[2, 2], [2, 6], [6, 2], [6, 6]], [], [], {"2,2": "{1,9}", "2,6": "{1,9}", "6,2": "{1,9}", "6,6": "{1,9,4}"}),
+        demoFrame("Remove the pair", "Because the fourth corner has the extra 4, remove 1 and 9 from that corner.", [], [], [[6, 6]], {"6,6": "-1/-9"})
+      ]
+    }
+  };
+
+  // These are real solver positions, captured from the same solving engine the
+  // app uses for hints.  Keeping the puzzle state with each example prevents
+  // the teaching diagrams from showing candidate values that cannot occur.
+  var verifiedExampleStates = {
+    "Naked Single": { p: "035000000700000000068010509000108400080090000009400300000500902000004080007380041", t: [[8, 6]], h: [], e: [], v: 6, d: "R9C7 = 6" },
+    "Hidden Single": { p: "035000000700000000068010509000108400080090000009400300000500932000004785007380641", t: [[6, 0]], h: [[0,0],[2,0],[3,0],[4,0],[5,0],[7,0],[8,0]], e: [], v: 8, d: "R7C1 = 8 — the only place in Column 1" },
+    "Naked Pair": { p: "050008007408507206090060853860900002124873965079600081900300008080109004002780009", t: [[0,3],[2,3]], h: [[0,3],[2,3]], e: [[0,4,2],[0,4,4],[2,5,2],[2,5,4]], d: "Naked Pair {2, 4} in Box 2" },
+    "Naked Triple": { p: "497280006000500040008000000875629413100358729923100005001035000000960301739010000", t: [[8,3],[8,5],[8,8]], h: [[8,3],[8,5],[8,8]], e: [[8,6,8],[8,6,2],[8,7,8]], d: "Naked Triple {2, 4, 8} in Row 9" },
+    "Naked Quad": { p: "497280006000500040008000000875629413100358729923100005001035000000960301739010000", t: [[1,0],[1,1],[1,2],[1,5]], h: [[1,0],[1,1],[1,2],[1,5]], e: [[1,6,1],[1,6,2],[1,8,2]], d: "Naked Quad {1, 2, 3, 6} in Row 2" },
+    "Hidden Pair": { p: "001004000064180005905000100510473900000000713307001050050000060000006507678030001", t: [[6,0],[6,4]], h: [[6,0],[6,4]], e: [[6,0,2]], d: "Hidden Pair {1, 4} in Row 7" },
+    "Hidden Triple": { p: "105370000600000000080006350061290030008600200000830061800900003003500000000003046", t: [[1,4],[1,5],[0,5]], h: [[1,4],[1,5],[0,5]], e: [[1,4,1],[1,4,2],[1,4,4],[1,5,1],[1,5,2],[1,5,4],[0,5,2],[0,5,4]], d: "Hidden Triple {5, 8, 9} in Box 1–2" },
+    "Hidden Quad": { p: "105370000600000000080006350061290030008600200000830061800900900003003500000000003046", t: [[0,5],[1,4],[1,5],[2,4]], h: [[0,5],[1,4],[1,5],[2,4]], e: [[0,5,4],[1,4,1],[1,4,4],[1,5,1],[1,5,4],[2,4,1],[2,4,4]], d: "Hidden Quad {2, 5, 8, 9} in Box 1–2" },
+    "Pointing Pair": { p: "497280006000500040008000000875629413100358729923100005001035000000960301739010000", t: [[2,0],[2,1]], h: [[2,0],[2,1]], e: [[2,6,5],[2,7,5]], d: "5 in Box 1–1 points to Row 3" },
+    "Box-Line Reduction": { p: "805010402017200050642050000250008900081090326000021005060030000109000538500109007", t: [[7,3],[7,4],[7,5]], h: [[7,3],[7,4],[7,5]], e: [[6,3,4],[6,5,4],[8,4,4]], d: "4 in Row 8 is confined to Box 3–2" },
+    "X-Wing": { p: "341752689800193724792008351518000036029830075073005802284000000100000048900080060", t: [[4,5],[4,6],[8,5],[8,6]], h: [[4,5],[4,6],[8,5],[8,6]], e: [[6,5,1],[6,6,1]], d: "X-Wing on 1 in Rows 5 & 9" },
+    "Finned X-Wing": { p: "050208007408507206297461853860910002124873965079600081900300008780109004002780009", t: [[1,1],[1,7],[8,1],[8,7],[8,6]], h: [[1,1],[1,7],[8,1],[8,7],[8,6]], e: [[6,7,1]], d: "Finned X-Wing on 1 in Rows 2 & 9" },
+    "Swordfish": { p: "001004000064180005905000100510473900000000713307001050050000060000006507678030001", t: [[0,0],[4,0],[4,5],[6,5],[0,6],[6,6]], h: [[0,0],[4,0],[4,5],[6,5],[0,6],[6,6]], e: [[0,1,8],[4,1,8],[4,3,8],[6,3,8],[0,7,8],[0,8,8],[6,8,8]], d: "Swordfish on 8 in Rows 1, 5 & 7" },
+    "Jellyfish": { p: "080060000509001070204507900006105429925004160000296350002000631001000700000010092", t: [[2,4],[2,7],[3,0],[3,4],[6,0],[6,5],[7,0],[7,5],[7,7]], h: [[2,4],[2,7],[3,0],[3,4],[6,0],[6,5],[7,0],[7,5],[7,7]], e: [[4,4,8],[8,0,8],[8,5,8]], d: "Jellyfish on 8 in Rows 3, 4, 7 & 8" },
+    "Skyscraper": { p: "105370000600000000080006350061290030008600200000830061800900003003500000000003046", t: [[2,4],[2,3],[4,4],[4,5]], h: [[2,4],[2,3],[4,4],[4,5]], e: [[1,5,1]], d: "Skyscraper on 1" },
+    "Two-String Kite": { p: "000020980409008060850009003000800000008207090070051008080002000000674829294385010", t: [[1,4],[1,1],[0,5],[3,5]], h: [[1,4],[1,1],[0,5],[3,5]], e: [[3,1,3]], d: "Two-String Kite removes 3 from R4C2" },
+    "Simple Coloring": { p: "000300080009458027080106059001000000000600070040005000006000000070560090910703540", t: [[1,6],[2,6]], h: [[1,6],[2,6]], e: [[3,6,3]], d: "Simple Coloring removes 3 from R4C7" },
+    "W-Wing": { p: "900231060036047009040906300069003150003004690020695038794068003685302940312409006", t: [[2,4],[4,0],[1,0],[1,3]], h: [[2,4],[4,0],[1,0],[1,3]], e: [[4,4,8]], d: "W-Wing {5, 8} removes 8 from R5C5" },
+    "XY-Wing": { p: "900231060036047009040906300069003150003685302940312409006", t: [[0,6],[5,6],[0,2]], h: [[0,6],[5,6],[0,2]], e: [[5,2,7]], d: "XY-Wing: pivot R1C7, wings R6C7 & R1C3" },
+    "XYZ-Wing": { p: "287600150041200070509071040153460708924700561876010034715000600408006017002107485", t: [[1,8],[1,0],[0,8]], h: [[1,8],[1,0],[0,8]], e: [[1,6,3]], d: "XYZ-Wing: pivot R2C9" },
+    "XY-Chain": { p: "497280006000500040008000000875629413100358729923100005001035000000960301739010000", t: [[0,5],[0,6],[8,6],[5,6],[1,6],[2,7]], h: [[0,5],[0,6],[8,6],[5,6],[1,6],[2,7]], e: [[0,7,3],[2,5,3]], d: "XY-Chain eliminates 3 from R1C8 and R3C6" },
+    "Unique Rectangle": { p: "001004000064180005905000100510473900000000713307001050050000060000006507678030001", t: [[6,0],[6,4],[7,0],[7,4]], h: [[6,0],[6,4],[7,0],[7,4]], e: [[7,0,1],[7,0,4]], d: "Unique Rectangle removes 1 and 4 from R8C1" }
+  };
+
+  verifiedExampleStates["Hidden Quad"].p = "105370000600000000080006350061290030008600200000830061800900003003500000000003046";
+  verifiedExampleStates["XY-Wing"].p = "900231060036047009040906300069003150003004690020695038794068003685302940312409006";
+
+  var exampleLessons = {
+    "Naked Single": { title: "Only one digit fits", note: "R9C7 has just one pencil mark left: 6. Put 6 in R9C7." },
+    "Hidden Single": { title: "Find the only 8 in Column 1", note: "Scan Column 1 for the candidate 8. It appears in only one empty cell, R7C1, so R7C1 must be 8." },
+    "Naked Pair": { title: "Lock the pair {2, 4}", note: "In Box 2, the two orange cells can contain only 2 and 4. Those digits must be used there, so cross 2 and 4 out of the red cells." },
+    "Naked Triple": { title: "Lock the triple {2, 4, 8}", note: "The three orange cells in Row 9 use only 2, 4, and 8 between them. Remove those digits from every other cell in that row; the red cells show the removals." },
+    "Naked Quad": { title: "Lock four digits in four cells", note: "The four orange cells in Row 2 contain only 1, 2, 3, and 6. Those four digits must stay in those cells, so remove 1 and 2 from the red cells." },
+    "Hidden Pair": { title: "Keep {1, 4} in these two cells", note: "In Row 7, only the two orange cells can hold 1 or 4. Keep 1 and 4 there, and erase the extra red candidate from R7C1." },
+    "Hidden Triple": { title: "Keep {5, 8, 9} in this box", note: "Within Box 1-2, digits 5, 8, and 9 can appear only in the three orange cells. Remove every other pencil mark from those cells; the red marks are the ones to erase." },
+    "Hidden Quad": { title: "Keep {2, 5, 8, 9} in this box", note: "Within Box 1-2, only the four orange cells can hold 2, 5, 8, or 9. Erase the red pencil marks from those four cells." },
+    "Pointing Pair": { title: "The box points along Row 3", note: "Inside the top-left box, 5 can only go in the two orange cells on Row 3. Therefore 5 cannot appear elsewhere on Row 3, so erase it from the red cells." },
+    "Box-Line Reduction": { title: "The row locks 4 into one box", note: "On Row 8, every possible 4 sits inside the middle-bottom box. That means the other cells in that box cannot be 4; erase the red 4s." },
+    "X-Wing": { title: "Match the two rows", note: "Rows 5 and 9 each restrict digit 1 to the same two columns. One 1 must land in each row, so remove 1 from the red cells in those columns." },
+    "Finned X-Wing": { title: "Use the extra fin", note: "The orange cells nearly make an X-Wing on 1. The extra orange fin fixes the pattern, which lets you remove 1 from the red cell." },
+    "Swordfish": { title: "Trace the three-row fish", note: "Across Rows 1, 5, and 7, digit 8 is limited to the same three columns. Those rows claim the 8s, so erase 8 from the red cells in those columns." },
+    "Jellyfish": { title: "Trace the four-row fish", note: "Across Rows 3, 4, 7, and 8, digit 8 is limited to the same four columns. Those rows claim the 8s, so erase 8 from the red cells in those columns." },
+    "Skyscraper": { title: "Follow the two strong links", note: "One of the two orange roof cells must be 1. The red cell sees both roofs, so it cannot also be 1; erase that pencil mark." },
+    "Two-String Kite": { title: "Join the row and column links", note: "The orange cells form one row link and one column link for digit 3. At least one outer endpoint is 3, so the red cell cannot be 3." },
+    "Simple Coloring": { title: "Eliminate the candidate that sees both colors", note: "Follow the two alternating color chains for digit 3. The red cell sees both possible colors, so whichever color is true, this cell cannot be 3." },
+    "W-Wing": { title: "Connect the matching wings", note: "The two orange cells both contain {5, 8}. The orange link forces one wing to be 8, so the red cell, which sees both wings, cannot be 8." },
+    "XY-Wing": { title: "Use the pivot and two wings", note: "The orange pivot shares one candidate with each orange wing. Whichever value the pivot takes, one wing becomes 7, so remove 7 from the red cell that sees both wings." },
+    "XYZ-Wing": { title: "Use the three-candidate pivot", note: "The orange pivot has three candidates, while both wings share 3. One wing must be 3, so the red cell that sees the pivot and both wings cannot be 3." },
+    "XY-Chain": { title: "Follow the chain from one end to the other", note: "The orange bivalue cells link the candidate 3 from one end of the chain to the other. A red cell sees both ends, so it cannot contain 3." },
+    "Unique Rectangle": { title: "Avoid the deadly rectangle", note: "The four orange corners would create two solutions if R8C1 were only {1, 4}. Remove 1 and 4 from the red corner, leaving its extra candidate." }
+  };
+
+  function exampleCellKey(row, col) {
+    return row + "," + col;
+  }
+
+  function escapeExampleText(value) {
+    return String(value).replace(/[&<>"']/g, function (character) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character];
+    });
+  }
+
+  function exampleMark(frame, row, col) {
+    var key = exampleCellKey(row, col);
+    if (frame.target.some(function (cell) { return exampleCellKey(cell[0], cell[1]) === key; })) return "target";
+    if (frame.cause.some(function (cell) { return exampleCellKey(cell[0], cell[1]) === key; })) return "cause";
+    if (frame.elimination.some(function (cell) { return exampleCellKey(cell[0], cell[1]) === key; })) return "elimination";
+    return "";
+  }
+
+  function exampleCandidates(puzzle, row, col) {
+    var used = {};
+    var index = row * 9 + col;
+    if (!puzzle || puzzle[index] !== "0") return "";
+
+    for (var i = 0; i < 9; i += 1) {
+      used[puzzle[row * 9 + i]] = true;
+      used[puzzle[i * 9 + col]] = true;
+    }
+    var boxRow = Math.floor(row / 3) * 3;
+    var boxCol = Math.floor(col / 3) * 3;
+    for (var boxIndex = 0; boxIndex < 9; boxIndex += 1) {
+      used[puzzle[(boxRow + Math.floor(boxIndex / 3)) * 9 + boxCol + (boxIndex % 3)]] = true;
+    }
+
+    var candidates = [];
+    for (var digit = 1; digit <= 9; digit += 1) {
+      if (!used[String(digit)]) candidates.push(digit);
+    }
+    return candidates.join("");
+  }
+
+  function verifiedExampleFrame(name) {
+    var state = verifiedExampleStates[name];
+    if (!state) return null;
+    var lesson = exampleLessons[name] || { title: state.d, note: "Follow the highlighted cells to apply this technique." };
+    return {
+      title: lesson.title,
+      note: lesson.note,
+      target: state.v ? state.t : [],
+      cause: state.v ? [] : (state.h.length ? state.h : state.t),
+      elimination: state.e.map(function (cell) { return [cell[0], cell[1]]; }),
+      removed: state.e,
+      labels: {},
+      puzzle: state.p
+    };
+  }
+
+  function removedExampleCandidates(frame, row, col) {
+    return (frame.removed || []).filter(function (cell) {
+      return cell[0] === row && cell[1] === col && cell.length > 2;
+    }).map(function (cell) { return String(cell[2]); });
+  }
+
+  function examplePencilMarks(candidates, removed) {
+    var marks = [];
+    for (var digit = 1; digit <= 9; digit += 1) {
+      var value = String(digit);
+      var present = candidates.indexOf(value) !== -1;
+      marks.push('<span class="sudohint-example-pencil' + (removed.indexOf(value) !== -1 ? ' is-removed' : '') + '">' + (present ? value : '') + '</span>');
+    }
+    return '<span class="sudohint-example-pencil-grid" aria-label="Candidates ' + escapeExampleText(candidates) + '">' + marks.join("") + '</span>';
+  }
+
+  function renderExampleFrame(frame, index) {
+    var cells = [];
+    for (var row = 0; row < 9; row += 1) {
+      for (var col = 0; col < 9; col += 1) {
+        var key = exampleCellKey(row, col);
+        var mark = exampleMark(frame, row, col);
+        var label = frame.labels[key] || "";
+        var value = frame.puzzle ? frame.puzzle[row * 9 + col] : "0";
+        var given = value !== "0";
+        var candidates = frame.puzzle && !given ? exampleCandidates(frame.puzzle, row, col) : "";
+        var removed = removedExampleCandidates(frame, row, col);
+        var context = !label && !mark && !frame.puzzle;
+        var candidateMarkup = candidates ? examplePencilMarks(candidates, removed) : "";
+        var content = label ? '<span class="sudohint-example-label">' + escapeExampleText(label) + '</span>' :
+          (given ? '<span class="sudohint-example-given">' + value + '</span>' :
+            (candidates ? candidateMarkup :
+              (context ? '<span class="sudohint-example-context" aria-hidden="true">&middot;</span>' : '')));
+        cells.push('<div class="sudohint-example-cell box-' + ((Math.floor(row / 3) + Math.floor(col / 3)) % 2 ? "odd" : "even") + ' ' + mark + (context ? ' context' : '') + '">' +
+          content +
+          '</div>');
+      }
+    }
+
+    return '<article class="sudohint-example-frame">' +
+      '<div class="sudohint-example-frame-head"><strong>' + escapeExampleText(frame.title) + '</strong><span>' + escapeExampleText(frame.note) + '</span></div>' +
+      '<div class="sudohint-example-grid" aria-label="Illustration of the technique">' + cells.join("") + '</div>' +
+      '</article>';
+  }
+
+  function createTechniqueExampleModal() {
+    if (document.querySelector("[data-sudohint-example-modal]")) return;
+
+    var modal = document.createElement("div");
+    modal.className = "sudohint-example-modal";
+    modal.setAttribute("data-sudohint-example-modal", "");
+    modal.hidden = true;
+    modal.innerHTML = '<div class="sudohint-example-backdrop"></div>' +
+      '<section class="sudohint-example-dialog" role="dialog" aria-modal="true" aria-labelledby="sudohint-example-title">' +
+      '<div class="sudohint-example-head"><div><p class="sudohint-import-kicker">TECHNIQUE EXAMPLE</p><h2 id="sudohint-example-title"></h2></div><button class="sudohint-example-close" type="button" aria-label="Close example">&times;</button></div>' +
+      '<p class="sudohint-example-summary"></p><div class="sudohint-example-frames"></div>' +
+      '<div class="sudohint-example-legend"><span><i class="given"></i> Puzzle given</span><span><i class="target"></i> Forced result</span><span><i class="cause"></i> Pattern cells</span><span><i class="elimination"></i> Candidate removed</span></div>' +
+      '</section>';
+    document.body.appendChild(modal);
+
+    var title = modal.querySelector("#sudohint-example-title");
+    var summary = modal.querySelector(".sudohint-example-summary");
+    var frames = modal.querySelector(".sudohint-example-frames");
+
+    function close() {
+      modal.hidden = true;
+    }
+
+    function open(name) {
+      var example = techniqueExamples[name];
+      if (!example) return;
+      title.textContent = name;
+      summary.textContent = example.summary;
+      var verifiedFrame = verifiedExampleFrame(name);
+      frames.innerHTML = (verifiedFrame ? [verifiedFrame] : example.frames).map(renderExampleFrame).join("");
+      modal.hidden = false;
+      modal.querySelector(".sudohint-example-close").focus();
+    }
+
+    modal.querySelector(".sudohint-example-close").addEventListener("click", close);
+    modal.querySelector(".sudohint-example-backdrop").addEventListener("click", close);
+    document.addEventListener("keydown", function (event) {
+      if (!modal.hidden && event.key === "Escape") close();
+    });
+    modal.openExample = open;
+  }
+
+  function enhanceTechniqueList() {
+    var list = document.querySelector(".technique-list");
+    if (!list) return;
+    createTechniqueExampleModal();
+
+    Array.prototype.forEach.call(list.querySelectorAll(".ref-item"), function (item) {
+      if (item.querySelector(".technique-example-trigger")) return;
+      var nameElement = item.querySelector(".ref-name");
+      if (!nameElement || !techniqueExamples[nameElement.textContent]) return;
+      var button = document.createElement("button");
+      button.className = "technique-example-trigger";
+      button.type = "button";
+      button.textContent = "Example";
+      button.setAttribute("aria-label", "View example for " + nameElement.textContent);
+      button.addEventListener("click", function () {
+        var modal = document.querySelector("[data-sudohint-example-modal]");
+        if (modal && modal.openExample) modal.openExample(nameElement.textContent);
+      });
+      item.querySelector(".ref-item-header").appendChild(button);
+    });
+  }
+
   function createImportUi() {
     if (document.querySelector("[data-sudohint-import]")) return;
 
@@ -385,9 +715,26 @@
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", createImportUi);
-  } else {
+  function startCustomUi() {
     createImportUi();
+
+    var attempts = 0;
+    var techniqueTimer = window.setInterval(function () {
+      enhanceTechniqueList();
+      attempts += 1;
+      var list = document.querySelector(".technique-list");
+      if (list || attempts > 40) {
+        window.clearInterval(techniqueTimer);
+        if (list && window.MutationObserver) {
+          new MutationObserver(enhanceTechniqueList).observe(list, { childList: true, subtree: true });
+        }
+      }
+    }, 50);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startCustomUi);
+  } else {
+    startCustomUi();
   }
 }());
