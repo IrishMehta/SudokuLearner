@@ -1,0 +1,1334 @@
+.sudohint-import {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 80;
+  font-family: inherit;
+}
+
+.sudohint-import-fab,
+.sudohint-import-primary,
+.sudohint-import-secondary,
+.sudohint-import-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  font-weight: 650;
+  letter-spacing: 0;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.sudohint-import-fab {
+  min-height: 44px;
+  padding: 0 16px;
+  color: white;
+  background: #2563eb;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 22%);
+}
+
+.sudohint-import-fab:hover,
+.sudohint-import-primary:hover,
+.sudohint-import-secondary:hover,
+.sudohint-import-close:hover {
+  transform: translateY(-1px);
+}
+
+.sudohint-import-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 81;
+  background: rgb(15 23 42 / 44%);
+}
+
+.sudohint-import-dialog {
+  position: fixed;
+  right: 18px;
+  bottom: 76px;
+  z-index: 82;
+  display: grid;
+  width: min(420px, calc(100vw - 32px));
+  gap: 12px;
+  padding: 18px;
+  color: var(--color-text, hsl(var(--foreground, 222 47% 11%)));
+  background: var(--color-card, hsl(var(--card, 0 0% 100%)));
+  border: 1px solid var(--color-border, hsl(var(--border, 214 32% 91%)));
+  border-radius: 8px;
+  box-shadow: 0 22px 60px rgb(15 23 42 / 24%);
+}
+
+.sudohint-import-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sudohint-import-head h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.sudohint-import-close {
+  width: 32px;
+  height: 32px;
+  color: var(--color-muted, hsl(var(--muted-foreground, 215 16% 47%)));
+  border: 1px solid var(--color-border, hsl(var(--border, 214 32% 91%)));
+  background: transparent;
+}
+
+.sudohint-import-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-muted, hsl(var(--muted-foreground, 215 16% 47%)));
+}
+
+.sudohint-import-text {
+  width: 100%;
+  min-height: 188px;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: inherit;
+  background: var(--color-bg, hsl(var(--background, 0 0% 100%)));
+  border: 1px solid var(--color-border, hsl(var(--border, 214 32% 91%)));
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+}
+
+.sudohint-import-text:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 16%);
+}
+
+.sudohint-import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.sudohint-import-primary,
+.sudohint-import-secondary {
+  min-height: 38px;
+  padding: 0 13px;
+}
+
+.sudohint-import-primary {
+  color: white;
+  background: #2563eb;
+}
+
+.sudohint-import-secondary {
+  color: var(--color-text, hsl(var(--foreground, 222 47% 11%)));
+  border: 1px solid var(--color-border, hsl(var(--border, 214 32% 91%)));
+  background: transparent;
+}
+
+.sudohint-import-status {
+  min-height: 18px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #dc2626;
+}
+
+.sudohint-import-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 90;
+  max-width: min(460px, calc(100vw - 32px));
+  padding: 11px 14px;
+  color: white;
+  background: #111827;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgb(15 23 42 / 24%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 10px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.sudohint-import-toast.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 520px) {
+  .sudohint-import {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .sudohint-import-dialog {
+    right: 12px;
+    bottom: 66px;
+  }
+
+  .sudohint-import-actions {
+    justify-content: stretch;
+  }
+
+  .sudohint-import-primary,
+  .sudohint-import-secondary {
+    flex: 1;
+  }
+}
+
+/* Product polish: keep the generated app's layout, but give it a calmer
+   reading surface and a more deliberate hierarchy. */
+:root {
+  --sudohint-ink: #172033;
+  --sudohint-muted: #647089;
+  --sudohint-line: #dfe5ef;
+  --sudohint-blue: #3458d4;
+  --sudohint-blue-soft: #edf2ff;
+}
+
+body {
+  background:
+    radial-gradient(circle at 8% 0%, rgb(94 120 220 / 10%), transparent 28rem),
+    linear-gradient(180deg, #f7f9fc 0%, var(--color-bg, #f4f3ef) 22rem);
+}
+
+button,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgb(52 88 212 / 28%);
+  outline-offset: 2px;
+}
+
+.app-header {
+  padding: 14px max(20px, calc((100vw - 1180px) / 2));
+  background: rgb(248 250 253 / 88%);
+  border-bottom-color: rgb(210 218 232 / 72%);
+}
+
+.app-title {
+  letter-spacing: -0.035em;
+}
+
+.app-title::after {
+  content: "Learn the logic";
+  display: block;
+  margin-top: -2px;
+  color: var(--color-text-muted, #6b6966);
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+}
+
+.app-main {
+  grid-template-columns: minmax(420px, 560px) minmax(300px, 380px);
+  justify-content: center;
+  gap: clamp(24px, 5vw, 72px);
+  padding: clamp(28px, 5vw, 64px) 24px 72px;
+  max-width: 1180px;
+}
+
+.left-col {
+  gap: 18px;
+}
+
+.controls-bar,
+.hint-controls {
+  gap: 10px;
+}
+
+.controls-bar {
+  padding: 6px;
+  border: 1px solid var(--sudohint-line);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 70%);
+  box-shadow: 0 8px 24px rgb(33 50 83 / 5%);
+}
+
+.difficulty-selector {
+  border: 0;
+  background: transparent;
+}
+
+.diff-btn {
+  min-height: 34px;
+}
+
+.diff-btn.active {
+  color: var(--sudohint-blue);
+  background: var(--sudohint-blue-soft);
+  box-shadow: none;
+}
+
+.generate-btn {
+  min-height: 38px;
+  border-radius: 10px;
+}
+
+.btn-hint {
+  min-height: 44px;
+  border-radius: 12px;
+  font-weight: 700;
+  background: rgb(255 255 255 / 72%);
+}
+
+.toggle-btn {
+  min-height: 38px;
+  border-radius: 10px;
+}
+
+.sudoku-grid {
+  border-radius: 16px;
+  box-shadow: 0 20px 45px rgb(34 49 81 / 14%), 0 2px 5px rgb(34 49 81 / 8%);
+}
+
+.sudoku-cell {
+  border-color: rgb(203 211 226 / 78%);
+}
+
+.right-col {
+  padding-top: 52px;
+}
+
+.hint-panel,
+.hint-empty,
+.technique-ref,
+.hint-history {
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgb(34 49 81 / 7%);
+}
+
+.hint-empty {
+  min-height: 260px;
+  justify-content: center;
+  background: rgb(255 255 255 / 66%);
+}
+
+.sudohint-import-fab {
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 12px;
+  background: var(--sudohint-blue);
+  box-shadow: 0 14px 30px rgb(38 61 139 / 25%);
+}
+
+.sudohint-import-fab:hover,
+.sudohint-import-primary:hover {
+  background: #2949b8;
+}
+
+.sudohint-import-backdrop {
+  background: rgb(19 29 50 / 52%);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.sudohint-import-dialog {
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  padding: 24px;
+  gap: 14px;
+  border: 1px solid var(--sudohint-line);
+  border-radius: 20px;
+  box-shadow: 0 28px 80px rgb(17 31 61 / 24%);
+  transform: translate(-50%, -50%);
+}
+
+/* Author styles override the browser's default [hidden] rule, so make the
+   closed state explicit for the modal and backdrop. */
+.sudohint-import-dialog[hidden],
+.sudohint-import-backdrop[hidden] {
+  display: none !important;
+}
+
+.sudohint-import-head {
+  align-items: flex-start;
+}
+
+.sudohint-import-kicker {
+  margin: 0 0 3px;
+  color: var(--sudohint-blue);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.sudohint-import-head h2 {
+  color: var(--sudohint-ink);
+  font-size: 1.3rem;
+  letter-spacing: -0.025em;
+}
+
+.sudohint-import-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.sudohint-import-help {
+  margin: -4px 0 2px;
+  color: var(--sudohint-muted);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+.sudohint-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  width: min(100%, 360px);
+  aspect-ratio: 1;
+  margin: 2px auto;
+  overflow: hidden;
+  border: 2px solid var(--sudohint-ink);
+  border-radius: 10px;
+  background: var(--sudohint-ink);
+  box-shadow: 0 8px 18px rgb(33 50 83 / 10%);
+}
+
+.sudohint-editor-cell {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  color: var(--sudohint-ink);
+  background: #fff;
+  border: 0;
+  border-right: 1px solid #d9dfeb;
+  border-bottom: 1px solid #d9dfeb;
+  font-family: var(--font-display, system-ui, sans-serif);
+  font-size: clamp(1rem, 4vw, 1.35rem);
+  font-weight: 700;
+  text-align: center;
+}
+
+.sudohint-editor-cell:nth-child(3n):not(:nth-child(9n)) {
+  border-right: 2px solid var(--sudohint-ink);
+}
+
+.sudohint-editor-cell:nth-child(n + 19):nth-child(-n + 27),
+.sudohint-editor-cell:nth-child(n + 46):nth-child(-n + 54) {
+  border-bottom: 2px solid var(--sudohint-ink);
+}
+
+.sudohint-editor-cell:focus {
+  position: relative;
+  z-index: 1;
+  background: var(--sudohint-blue-soft);
+  box-shadow: inset 0 0 0 2px var(--sudohint-blue);
+  outline: none;
+}
+
+.sudohint-import-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--sudohint-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sudohint-import-divider::before,
+.sudohint-import-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--sudohint-line);
+}
+
+.sudohint-import-label {
+  color: var(--sudohint-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.sudohint-import-text {
+  min-height: 68px;
+  padding: 10px 12px;
+  border-color: var(--sudohint-line);
+  border-radius: 10px;
+  font-size: 0.82rem;
+}
+
+.sudohint-import-text::placeholder {
+  color: #9aa5b8;
+}
+
+.sudohint-import-actions {
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.sudohint-import-primary,
+.sudohint-import-secondary,
+.sudohint-import-quiet {
+  min-height: 40px;
+  border-radius: 10px;
+}
+
+.sudohint-import-primary {
+  margin-left: auto;
+  padding: 0 16px;
+  background: var(--sudohint-blue);
+}
+
+.sudohint-import-secondary,
+.sudohint-import-quiet {
+  padding: 0 11px;
+  color: var(--sudohint-blue);
+  border: 1px solid #cbd6f4;
+  background: var(--sudohint-blue-soft);
+}
+
+.sudohint-import-quiet {
+  color: var(--sudohint-muted);
+  border-color: var(--sudohint-line);
+  background: transparent;
+}
+
+.sudohint-import-status {
+  margin: 0;
+  color: #287a4b;
+}
+
+.sudohint-import-status.is-error {
+  color: #c0393d;
+}
+
+.sudohint-import-toast {
+  bottom: 24px;
+  border-radius: 10px;
+  background: #172033;
+}
+
+@media (max-width: 768px) {
+  .app-main {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px 16px 96px;
+  }
+
+  .right-col {
+    padding-top: 0;
+  }
+}
+
+/* Final visual system: neutral surfaces, one accent, and a readable system
+   font. Keep these tokens at the end so both generated and custom UI use the
+   same palette. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-surface-offset: #eef0f3;
+  --color-surface-offset-2: #e4e7ec;
+  --color-surface-dynamic: #d9dee6;
+  --color-divider: #e1e5ea;
+  --color-border: #d2d8e0;
+  --color-text: #1f2937;
+  --color-text-muted: #667085;
+  --color-text-faint: #98a2b3;
+  --color-text-inverse: #ffffff;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-active: #1e40af;
+  --color-primary-highlight: #eff6ff;
+  --color-hint-target: #2563eb;
+  --color-hint-target-bg: #eff6ff;
+  --font-display: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #111418;
+  --color-surface: #191d23;
+  --color-surface-2: #20252d;
+  --color-surface-offset: #242a33;
+  --color-surface-offset-2: #2d3540;
+  --color-surface-dynamic: #374151;
+  --color-divider: #303741;
+  --color-border: #3b4552;
+  --color-text: #f3f4f6;
+  --color-text-muted: #b0bac8;
+  --color-text-faint: #7e8a9a;
+  --color-text-inverse: #111418;
+  --color-primary: #75a7ff;
+  --color-primary-hover: #9bc0ff;
+  --color-primary-active: #bfd5ff;
+  --color-primary-highlight: #1e355c;
+  --color-hint-target: #75a7ff;
+  --color-hint-target-bg: #1e355c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-bg: #111418;
+    --color-surface: #191d23;
+    --color-surface-2: #20252d;
+    --color-surface-offset: #242a33;
+    --color-surface-offset-2: #2d3540;
+    --color-divider: #303741;
+    --color-border: #3b4552;
+    --color-text: #f3f4f6;
+    --color-text-muted: #b0bac8;
+    --color-text-faint: #7e8a9a;
+    --color-text-inverse: #111418;
+    --color-primary: #75a7ff;
+    --color-primary-hover: #9bc0ff;
+    --color-primary-active: #bfd5ff;
+    --color-primary-highlight: #1e355c;
+    --color-hint-target: #75a7ff;
+    --color-hint-target-bg: #1e355c;
+  }
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.app-header {
+  background: var(--color-surface);
+  border-bottom-color: var(--color-divider);
+}
+
+.app-title,
+.hint-technique,
+.hint-empty-title,
+.complete-content h2,
+.hint-description,
+.history-desc {
+  font-family: var(--font-display);
+}
+
+.controls-bar,
+.hint-empty,
+.hint-panel,
+.technique-ref,
+.hint-history {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.controls-bar {
+  box-shadow: 0 4px 14px rgb(16 24 40 / 5%);
+}
+
+.sudohint-import {
+  top: 10px;
+  right: max(68px, calc((100vw - 1180px) / 2 + 58px));
+  bottom: auto;
+}
+
+.sudohint-import-fab {
+  color: #ffffff;
+  background: var(--color-primary);
+  border-color: transparent;
+  box-shadow: 0 5px 14px rgb(37 99 235 / 22%);
+}
+
+.sudohint-import-dialog {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.sudohint-import-head h2 {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.sudohint-import-close {
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+.sudohint-import-kicker,
+.sudohint-import-primary,
+.sudohint-import-secondary {
+  color: var(--color-primary);
+}
+
+.sudohint-import-primary,
+.sudohint-import-fab {
+  color: #ffffff;
+  background: var(--color-primary);
+}
+
+.sudohint-import-primary:hover,
+.sudohint-import-fab:hover {
+  background: var(--color-primary-hover);
+}
+
+.sudohint-import-secondary {
+  background: var(--color-primary-highlight);
+  border-color: var(--color-border);
+}
+
+.sudohint-import-quiet {
+  color: var(--color-text-muted);
+  background: transparent;
+  border-color: var(--color-border);
+}
+
+.sudohint-import-help,
+.sudohint-import-label,
+.sudohint-import-divider,
+.sudohint-import-close {
+  color: var(--color-text-muted);
+}
+
+.sudohint-import-text,
+.sudohint-editor-cell {
+  color: var(--color-text);
+  background: var(--color-bg);
+  border-color: var(--color-border);
+}
+
+.sudohint-editor-grid {
+  background: var(--color-text);
+  border-color: var(--color-text);
+}
+
+.sudohint-editor-cell:nth-child(3n):not(:nth-child(9n)),
+.sudohint-editor-cell:nth-child(n + 19):nth-child(-n + 27),
+.sudohint-editor-cell:nth-child(n + 46):nth-child(-n + 54) {
+  border-color: var(--color-text);
+}
+
+@media (max-width: 520px) {
+  .sudohint-import {
+    top: 8px;
+    right: 58px;
+  }
+}
+
+/* Desktop information flow: board first, technique reference underneath;
+   the active hint remains beside the board where it is immediately useful. */
+@media (min-width: 769px) {
+  .app-main {
+    grid-template-rows: auto auto;
+    column-gap: clamp(28px, 5vw, 64px);
+    row-gap: 16px;
+    align-items: start;
+  }
+
+  .left-col {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .right-col {
+    display: contents;
+  }
+
+  .right-col > .hint-panel,
+  .right-col > .hint-empty {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  .right-col > .technique-ref {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .right-col > .hint-history {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+  }
+}
+
+@media (min-width: 769px) and (max-height: 820px) {
+  .app-main {
+    grid-template-rows: none;
+    row-gap: 0;
+    align-items: center;
+  }
+
+  .left-col {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .right-col {
+    display: flex;
+    max-width: 440px;
+  }
+
+  .right-col > .hint-panel,
+  .right-col > .hint-empty,
+  .right-col > .technique-ref,
+  .right-col > .hint-history {
+    grid-column: auto;
+    grid-row: auto;
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* The page may grow naturally: use the full device width, keep spacing tight,
+   and let the reference content continue below the board when needed. */
+html,
+body {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+.app-root {
+  height: auto;
+  min-height: 100dvh;
+  overflow: visible;
+}
+
+.app-main {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
+  grid-template-rows: auto auto;
+  gap: 18px clamp(24px, 4vw, 56px);
+  width: 100%;
+  max-width: 1360px;
+  padding: 24px clamp(16px, 3vw, 40px) 40px;
+  overflow: visible;
+}
+
+.right-col {
+  overflow: visible;
+}
+
+@media (min-width: 769px) {
+  :root {
+    --cell-size: clamp(32px, min(6.5vw, calc((100vw - 520px) / 9)), 58px);
+  }
+
+  .app-main {
+    align-items: start;
+  }
+
+  .left-col {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .right-col {
+    display: contents;
+    max-width: none;
+  }
+
+  .right-col > .hint-panel,
+  .right-col > .hint-empty {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .right-col > .technique-ref {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+  }
+
+  .right-col > .hint-history {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --cell-size: clamp(30px, 10.4vw, 52px);
+  }
+
+  .app-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 24px;
+    padding: 18px 16px 40px;
+  }
+
+  .left-col {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .right-col,
+  .right-col:has(.hint-panel) {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    grid-column: auto;
+    grid-row: auto;
+    max-width: none;
+    padding: 0;
+    background: transparent;
+  }
+
+  .right-col:has(.hint-panel) .technique-ref,
+  .right-col:has(.hint-panel) .hint-history {
+    display: block;
+  }
+}
+
+.sudohint-editor-cell:focus {
+  color: var(--color-text) !important;
+  background: var(--color-primary-highlight) !important;
+  box-shadow: inset 0 0 0 2px var(--color-primary) !important;
+  outline: none;
+}
+
+/* Final layout override: content determines page height, so the document can
+   scroll when the reference section extends beyond the viewport. */
+html,
+body {
+  height: auto !important;
+  min-height: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+.app-root {
+  height: auto !important;
+  min-height: 100dvh;
+  overflow: visible !important;
+}
+
+.app-main {
+  grid-template-rows: auto auto;
+  align-items: start;
+  gap: 18px clamp(24px, 4vw, 56px);
+  width: 100%;
+  max-width: 1360px;
+  padding: 24px clamp(16px, 3vw, 40px) 40px;
+  overflow: visible !important;
+}
+
+.right-col {
+  overflow: visible;
+}
+
+@media (min-width: 769px) {
+  :root {
+    --cell-size: clamp(32px, min(6.5vw, calc((100vw - 520px) / 9)), 58px);
+  }
+
+  .left-col {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .right-col {
+    display: contents;
+    max-width: none;
+  }
+
+  .right-col > .hint-panel,
+  .right-col > .hint-empty {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  .right-col > .technique-ref {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+  }
+
+  .right-col > .hint-history {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --cell-size: clamp(30px, 10.4vw, 52px);
+  }
+
+  .app-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 24px;
+    padding: 18px 16px 40px;
+  }
+
+  .left-col {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .right-col,
+  .right-col:has(.hint-panel) {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    grid-column: auto;
+    grid-row: auto;
+    max-width: none;
+    padding: 0;
+    background: transparent;
+  }
+
+  .right-col:has(.hint-panel) .technique-ref,
+  .right-col:has(.hint-panel) .hint-history {
+    display: block;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-header {
+    padding-inline: 16px;
+  }
+
+  .app-title::after {
+    display: none;
+  }
+
+  .app-main {
+    gap: 24px;
+  }
+
+  .controls-bar {
+    flex-wrap: wrap;
+  }
+
+  .controls-bar .generate-btn {
+    flex: 1;
+  }
+
+  .sudohint-import-dialog {
+    padding: 18px;
+  }
+
+  .sudohint-import-actions {
+    flex-wrap: wrap;
+  }
+
+  .sudohint-import-primary {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Keep the application in a single viewport. The puzzle scales with the
+   available height so the board, controls, and hint panel remain visible. */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  min-height: 0;
+}
+
+.app-root {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-header {
+  flex: 0 0 auto;
+}
+
+.app-main {
+  min-height: 0;
+  overflow: hidden;
+  padding-top: clamp(16px, 3vh, 32px);
+  padding-bottom: clamp(16px, 3vh, 32px);
+}
+
+.left-col,
+.right-col {
+  min-height: 0;
+}
+
+.right-col {
+  padding-top: 0;
+  overflow: hidden;
+  max-width: 440px;
+}
+
+.technique-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.technique-list .ref-item {
+  min-width: 0;
+  padding: 9px 12px;
+}
+
+.technique-list .ref-item:nth-child(odd) {
+  border-right: 1px solid var(--color-divider);
+}
+
+.technique-list .ref-item:nth-last-child(-n + 2) {
+  border-bottom: none;
+}
+
+.technique-list .ref-desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 769px) {
+  :root {
+    --cell-size: clamp(30px, min(6.5vw, calc((100dvh - 224px) / 9)), 58px);
+  }
+
+  .app-main {
+    align-items: center;
+  }
+
+  .left-col {
+    justify-content: center;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 769px) {
+  .app-header {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .app-title::after {
+    display: none;
+  }
+
+  .app-main {
+    gap: 28px;
+  }
+
+  .controls-bar {
+    padding: 3px;
+  }
+
+  .hint-empty {
+    min-height: 190px;
+    padding-block: 20px;
+  }
+
+}
+
+@media (max-height: 720px) {
+  .sudohint-import-dialog {
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .sudohint-editor-grid {
+    width: min(100%, 300px, calc(100dvh - 340px));
+  }
+
+  .sudohint-import-help {
+    font-size: 0.76rem;
+  }
+
+  .sudohint-import-text {
+    min-height: 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* On narrow screens the app remains fixed-height; the editor and hint
+     dialog are still available without introducing document scrolling. */
+  .app-main {
+    grid-template-columns: minmax(0, 1fr);
+    overflow: hidden;
+    padding: 16px;
+  }
+
+  .left-col {
+    min-height: 0;
+  }
+
+  .right-col {
+    display: none;
+    max-width: 100%;
+  }
+
+  .right-col:has(.hint-panel) {
+    position: fixed;
+    inset: 56px 0 0;
+    z-index: 40;
+    display: flex;
+    padding: 18px 16px 24px;
+    background: var(--color-bg, #f4f3ef);
+  }
+
+  .right-col:has(.hint-panel) .technique-ref,
+  .right-col:has(.hint-panel) .hint-history {
+    display: none;
+  }
+
+  .sudoku-wrapper,
+  .sudoku-grid,
+  .grid-placeholder {
+    max-width: 100%;
+  }
+
+  :root {
+    --cell-size: min(10.4vw, calc((100dvh - 205px) / 9));
+  }
+}
+
+/* Final viewport behavior: let content define the page height and allow
+   normal document scrolling when the reference section needs more room. */
+html,
+body {
+  height: auto !important;
+  min-height: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+.app-root {
+  height: auto !important;
+  min-height: 100dvh;
+  overflow: visible !important;
+}
+
+.app-main {
+  grid-template-rows: auto auto;
+  align-items: start;
+  gap: 18px clamp(24px, 4vw, 56px);
+  width: 100%;
+  max-width: 1360px;
+  padding: 24px clamp(16px, 3vw, 40px) 40px;
+  overflow: visible !important;
+}
+
+.right-col {
+  overflow: visible;
+}
+
+@media (min-width: 769px) {
+  :root {
+    --cell-size: clamp(32px, min(6.5vw, calc((100vw - 520px) / 9)), 58px);
+  }
+
+  .left-col {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .right-col {
+    display: contents;
+    max-width: none;
+  }
+
+  .right-col > .hint-panel,
+  .right-col > .hint-empty {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  .right-col > .technique-ref {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+  }
+
+  .right-col > .hint-history {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --cell-size: clamp(30px, 10.4vw, 52px);
+  }
+
+  .app-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 24px;
+    padding: 18px 16px 40px;
+  }
+
+  .left-col {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .right-col,
+  .right-col:has(.hint-panel) {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    grid-column: auto;
+    grid-row: auto;
+    max-width: none;
+    padding: 0;
+    background: transparent;
+  }
+
+  .right-col:has(.hint-panel) .technique-ref,
+  .right-col:has(.hint-panel) .hint-history {
+    display: block;
+  }
+}
