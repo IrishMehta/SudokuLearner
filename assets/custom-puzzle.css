@@ -905,6 +905,138 @@ body {
   }
 }
 
+@media (max-width: 768px) {
+  .app-header {
+    padding: 10px 14px;
+  }
+
+  .header-left {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .app-title {
+    font-size: 1.05rem;
+  }
+
+  .header-right {
+    gap: 4px;
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .sudohint-import {
+    top: 7px;
+    right: 52px;
+  }
+
+  .sudohint-import-fab {
+    min-height: 40px;
+    padding: 0 11px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+  }
+
+  .sudohint-import-fab svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .app-main {
+    gap: 20px;
+    padding: 16px 12px 32px;
+  }
+
+  .left-col {
+    width: min(100%, 480px);
+    margin-inline: auto;
+    gap: 14px;
+  }
+
+  .controls-bar {
+    gap: 8px;
+    padding: 5px;
+    border-radius: 12px;
+  }
+
+  .difficulty-selector {
+    flex: 1;
+  }
+
+  .diff-btn {
+    flex: 1;
+    padding-inline: 10px;
+  }
+
+  .controls-bar .generate-btn {
+    min-height: 36px;
+    padding-inline: 12px;
+  }
+
+  .hint-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 8px;
+  }
+
+  .btn-hint,
+  .toggle-btn {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
+    padding-inline: 8px;
+    white-space: nowrap;
+  }
+
+  .sudoku-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .sudoku-grid,
+  .grid-placeholder {
+    max-width: 100%;
+  }
+
+  .numpad {
+    width: min(100%, calc(var(--cell-size) * 9 + 5px));
+    margin-inline: auto;
+  }
+
+  /* Use the actual available width on phones instead of summing fixed cell
+     widths. This keeps the ninth column inside the viewport. */
+  .sudoku-grid,
+  .grid-placeholder {
+    width: min(100%, calc(100vw - 24px));
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .sudoku-grid {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    grid-template-rows: repeat(9, minmax(0, 1fr));
+  }
+
+  .sudoku-cell {
+    width: auto;
+    height: auto;
+  }
+
+  .numpad {
+    width: min(100%, calc(100vw - 24px));
+  }
+}
+
 .sudohint-editor-cell:focus {
   color: var(--color-text) !important;
   background: var(--color-primary-highlight) !important;
