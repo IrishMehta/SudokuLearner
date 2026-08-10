@@ -448,8 +448,8 @@ function Qf(){
 }
 function Xf(y){
   const k=Qf(), u=In(k), w=Aa(Array.from({
-    length:81
-  }, (N, S)=>[Math.floor(S/9), S%9])), f=y==="medium"?32:26;
+  length:81
+  }, (N, S)=>[Math.floor(S/9), S%9])), f=y==="medium"?32:24;
   let m=81;
   for(const[N, S]of w){
     if(m<=f)break;
@@ -1334,7 +1334,7 @@ function id(y, k){
 
 }
 function od(){
-  const[y, k]=xe.useState(()=>window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  const[y, k]=xe.useState("light");
   return xe.useEffect(()=>{
     document.documentElement.setAttribute("data-theme", y)
   }, [y]), {
@@ -1500,10 +1500,10 @@ function ad(){
     window.SudoHint={
       ...(window.SudoHint||{
 
-      }), loadPuzzle:Re
+      }), loadPuzzle:Re, getCurrentPuzzleString:()=>u.flat().map(M=>M===null?"0":String(M)).join("")
     }
 
-  }, [Re]);
+  }, [Re, u]);
   xe.useEffect(()=>{
     const $=M=>{
       if(!R)return;

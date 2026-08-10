@@ -235,8 +235,8 @@ body {
   --color-orange-highlight: #442d28;
   --color-blue: #a9c8e5;
   --color-blue-highlight: #173a5d;
-  --color-hint-target: #82bee9;
-  --color-hint-target-bg: #173d60;
+  --color-hint-target: #0b172b;
+  --color-hint-target-bg: #a9c8e5;
   --color-hint-highlight-bg: #493229;
   --color-hint-elim-bg: #49292e;
   --sudohint-ink: #f7f2e8;
@@ -261,6 +261,31 @@ body {
   background: rgb(0 0 0 / 62%);
 }
 
+/* The board gets its own quieter slate treatment. It stays distinct from the
+   page background without looking like a patchwork of saturated blues. */
+:root[data-theme="dark"] .sudoku-grid,
+:root[data-theme="dark"] .sudoku-cell.box-even {
+  background: #1b2633;
+}
+
+:root[data-theme="dark"] .sudoku-cell.box-odd {
+  background: #263542;
+}
+
+:root[data-theme="dark"] .sudoku-cell {
+  border-color: #718398;
+}
+
+:root[data-theme="dark"] .sudoku-cell:nth-child(3n):not(:nth-child(9n)),
+:root[data-theme="dark"] .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+:root[data-theme="dark"] .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+  border-color: #d4dde5;
+}
+
+:root[data-theme="dark"] .candidate {
+  color: #d8e1e9;
+}
+
 /* Light-blue actions need dark lettering; white text washes out against the
    pale blue used as the dark theme's primary action colour. */
 :root[data-theme="dark"] .btn-primary,
@@ -279,9 +304,17 @@ body {
    live hint and in its matching technique example. */
 :root[data-theme="dark"] .sudohint-example-cell.target,
 :root[data-theme="dark"] .sudoku-cell.hint-target {
-  color: #a9d8f5;
-  background: #173d60 !important;
-  box-shadow: inset 0 0 0 2px #82bee9 !important;
+  color: #0b172b;
+  background: #a9c8e5 !important;
+  box-shadow: inset 0 0 0 2px #e0edf7 !important;
+}
+
+:root[data-theme="dark"] .sudoku-cell.hint-target .cell-value {
+  color: #0b172b !important;
+}
+
+:root[data-theme="dark"] .sudoku-cell.hint-target .candidate {
+  color: #0b172b !important;
 }
 
 :root[data-theme="dark"] .sudohint-example-cell.cause,
@@ -307,8 +340,8 @@ body {
 
 :root[data-theme="dark"] .sudohint-example-legend i.target,
 :root[data-theme="dark"] .target-dot {
-  color: #82bee9;
-  background: #173d60;
+  color: #0b172b;
+  background: #a9c8e5;
 }
 
 :root[data-theme="dark"] .sudohint-example-legend i.cause,
@@ -486,6 +519,19 @@ body {
   background: var(--color-primary-highlight);
   box-shadow: 0 3px 8px rgb(14 33 63 / 10%);
   text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.sudohint-copy-state {
+  min-height: 34px;
+  padding-inline: 11px;
+  border-radius: 8px;
+  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.sudohint-copy-state:hover {
+  background: var(--color-primary-highlight);
+  box-shadow: 0 3px 8px rgb(14 33 63 / 10%);
   transform: translateY(-1px);
 }
 

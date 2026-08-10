@@ -1293,12 +1293,60 @@
     });
   }
 
+  function copyCurrentGrid() {
+    var getCurrentPuzzleString = window.SudoHint && window.SudoHint.getCurrentPuzzleString;
+    var text = typeof getCurrentPuzzleString === "function" ? getCurrentPuzzleString() : "";
+    if (!/^[0-9]{81}$/.test(text)) return Promise.reject(new Error("The grid is not ready."));
+
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+
+    var textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand("copy");
+    } finally {
+      textarea.remove();
+    }
+    return Promise.resolve();
+  }
+
+  function enhanceBoardSnapshot() {
+    var controls = document.querySelector(".hint-controls");
+    if (!controls || controls.querySelector(".sudohint-copy-state")) return;
+
+    var button = document.createElement("button");
+    button.className = "toggle-btn sudohint-copy-state";
+    button.type = "button";
+    button.textContent = "Copy grid";
+    button.title = "Copy the current 81-character puzzle string";
+    button.setAttribute("aria-label", "Copy current grid as an 81-character puzzle string");
+    button.addEventListener("click", function () {
+      copyCurrentGrid().then(function () {
+        button.textContent = "Copied!";
+        window.setTimeout(function () { button.textContent = "Copy grid"; }, 1400);
+      }).catch(function () {
+        button.textContent = "Try again";
+        window.setTimeout(function () { button.textContent = "Copy grid"; }, 1400);
+      });
+    });
+    controls.appendChild(button);
+  }
+
   function startCustomUi() {
     createImportUi();
 
     enhanceHintKey();
+    enhanceBoardSnapshot();
     if (window.MutationObserver) {
-      new MutationObserver(enhanceHintKey).observe(document.body, { childList: true, subtree: true });
+      new MutationObserver(function () {
+        enhanceHintKey();
+        enhanceBoardSnapshot();
+      }).observe(document.body, { childList: true, subtree: true });
     }
 
     var attempts = 0;
