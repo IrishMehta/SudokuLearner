@@ -515,6 +515,367 @@
     });
   }
 
+  function imageToneLimits(data) {
+    var histogram = new Uint32Array(256);
+    var pixels = data.length / 4;
+    for (var index = 0; index < data.length; index += 4) {
+      var tone = Math.round(data[index] * 0.2126 + data[index + 1] * 0.7152 + data[index + 2] * 0.0722);
+      histogram[tone] += 1;
+    }
+
+    function quantile(amount) {
+      var target = pixels * amount;
+      var total = 0;
+      for (var tone = 0; tone < 256; tone += 1) {
+        total += histogram[tone];
+        if (total >= target) return tone;
+      }
+      return 128;
+    }
+
+    // Dark-mode screenshots often use medium-gray inner grid lines.  A bright
+    // floor of 120 catches only the outer box lines, so keep this low enough
+    // to retain the thin lines while the 10-line spacing check rejects text.
+    return { dark: Math.min(155, Math.max(45, quantile(0.22))), bright: Math.max(70, Math.min(220, quantile(0.84))) };
+  }
+
+  function lineBands(projection, minimum) {
+    var bands = [];
+    for (var index = 0; index < projection.length;) {
+      if (projection[index] < minimum) {
+        index += 1;
+        continue;
+      }
+      var start = index;
+      var weight = 0;
+      var center = 0;
+      while (index < projection.length && projection[index] >= minimum) {
+        weight += projection[index];
+        center += index * projection[index];
+        index += 1;
+      }
+      bands.push({ start: start, end: index - 1, center: center / Math.max(1, weight) });
+    }
+    return bands;
+  }
+
+  function findNineSpaces(bands) {
+    var best = null;
+    for (var first = 0; first < bands.length - 9; first += 1) {
+      for (var last = first + 9; last < bands.length; last += 1) {
+        var step = (bands[last].center - bands[first].center) / 9;
+        if (step < 12) continue;
+        var selected = [bands[first]];
+        var error = 0;
+        var valid = true;
+        for (var line = 1; line < 9; line += 1) {
+          var expected = bands[first].center + step * line;
+          var closest = null;
+          var distance = Infinity;
+          for (var candidate = first + 1; candidate < last; candidate += 1) {
+            var difference = Math.abs(bands[candidate].center - expected);
+            if (difference < distance) {
+              closest = bands[candidate];
+              distance = difference;
+            }
+          }
+          if (!closest || distance > step * 0.18) {
+            valid = false;
+            break;
+          }
+          selected.push(closest);
+          error += distance / step;
+        }
+        if (!valid) continue;
+        selected.push(bands[last]);
+        if (!best || error < best.error) best = { lines: selected, error: error, start: bands[first].center, end: bands[last].center };
+      }
+    }
+    return best;
+  }
+
+  function gridCandidate(imageData, width, height, limit, isBright) {
+    var vertical = new Uint32Array(width);
+    var horizontal = new Uint32Array(height);
+    var data = imageData.data;
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        var pixel = (y * width + x) * 4;
+        var tone = data[pixel] * 0.2126 + data[pixel + 1] * 0.7152 + data[pixel + 2] * 0.0722;
+        if (isBright ? tone >= limit : tone <= limit) {
+          vertical[x] += 1;
+          horizontal[y] += 1;
+        }
+      }
+    }
+    var columns = findNineSpaces(lineBands(vertical, Math.max(10, height * 0.16)));
+    var rows = findNineSpaces(lineBands(horizontal, Math.max(10, width * 0.16)));
+    if (!columns || !rows) return null;
+    var boardWidth = columns.end - columns.start;
+    var boardHeight = rows.end - rows.start;
+    var aspectPenalty = Math.abs(Math.log(boardWidth / boardHeight));
+    return {
+      left: columns.start,
+      top: rows.start,
+      right: columns.end,
+      bottom: rows.end,
+      score: columns.error + rows.error + aspectPenalty * 5,
+      confidence: Math.max(0, Math.min(0.99, 0.96 - (columns.error + rows.error) * 0.06 - aspectPenalty * 0.45))
+    };
+  }
+
+  function edgeGridCandidate(imageData, width, height) {
+    var tones = new Uint8Array(width * height);
+    var data = imageData.data;
+    for (var pixel = 0, toneIndex = 0; pixel < data.length; pixel += 4, toneIndex += 1) {
+      tones[toneIndex] = Math.round(data[pixel] * 0.2126 + data[pixel + 1] * 0.7152 + data[pixel + 2] * 0.0722);
+    }
+
+    var vertical = new Uint32Array(width);
+    var horizontal = new Uint32Array(height);
+    for (var y = 1; y < height - 1; y += 1) {
+      var row = y * width;
+      for (var x = 1; x < width - 1; x += 1) {
+        vertical[x] += Math.abs(tones[row + x + 1] - tones[row + x - 1]);
+        horizontal[y] += Math.abs(tones[row + width + x] - tones[row - width + x]);
+      }
+    }
+
+    var columns = findNineSpaces(lineBands(vertical, Math.max(80, height * 2.4)));
+    var rows = findNineSpaces(lineBands(horizontal, Math.max(80, width * 2.4)));
+    if (!columns || !rows) return null;
+    var boardWidth = columns.end - columns.start;
+    var boardHeight = rows.end - rows.start;
+    var aspectPenalty = Math.abs(Math.log(boardWidth / boardHeight));
+    return {
+      left: columns.start,
+      top: rows.start,
+      right: columns.end,
+      bottom: rows.end,
+      score: columns.error + rows.error + aspectPenalty * 5,
+      confidence: Math.max(0, Math.min(0.94, 0.9 - (columns.error + rows.error) * 0.05 - aspectPenalty * 0.4))
+    };
+  }
+
+  function majorLinePairs(bands, dimension) {
+    var pairs = [];
+    for (var first = 0; first < bands.length - 1; first += 1) {
+      for (var second = first + 1; second < bands.length; second += 1) {
+        var spacing = bands[second].center - bands[first].center;
+        var start = bands[first].center - spacing;
+        var end = bands[second].center + spacing;
+        var size = end - start;
+        if (spacing < 24 || size < dimension * 0.28 || start < 0 || end > dimension) continue;
+        pairs.push({ start: start, end: end, size: size });
+      }
+    }
+    return pairs;
+  }
+
+  function majorGridCandidate(imageData, width, height, limit, isBright) {
+    var vertical = new Uint32Array(width);
+    var horizontal = new Uint32Array(height);
+    var data = imageData.data;
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        var pixel = (y * width + x) * 4;
+        var tone = data[pixel] * 0.2126 + data[pixel + 1] * 0.7152 + data[pixel + 2] * 0.0722;
+        if (isBright ? tone >= limit : tone <= limit) {
+          vertical[x] += 1;
+          horizontal[y] += 1;
+        }
+      }
+    }
+    var columnPairs = majorLinePairs(lineBands(vertical, Math.max(10, height * 0.12)), width);
+    var rowPairs = majorLinePairs(lineBands(horizontal, Math.max(10, width * 0.12)), height);
+    var best = null;
+    for (var column = 0; column < columnPairs.length; column += 1) {
+      for (var row = 0; row < rowPairs.length; row += 1) {
+        var aspectPenalty = Math.abs(Math.log(columnPairs[column].size / rowPairs[row].size));
+        if (!best || aspectPenalty < best.score) {
+          best = {
+            left: columnPairs[column].start,
+            top: rowPairs[row].start,
+            right: columnPairs[column].end,
+            bottom: rowPairs[row].end,
+            score: aspectPenalty,
+            confidence: Math.max(0.45, Math.min(0.78, 0.74 - aspectPenalty * 0.35))
+          };
+        }
+      }
+    }
+    return best;
+  }
+
+  function detectSudokuGrid(image) {
+    var maximum = 1000;
+    var scale = Math.min(1, maximum / Math.max(image.naturalWidth, image.naturalHeight));
+    var width = Math.max(1, Math.round(image.naturalWidth * scale));
+    var height = Math.max(1, Math.round(image.naturalHeight * scale));
+    var canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    var context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(image, 0, 0, width, height);
+    var imageData = context.getImageData(0, 0, width, height);
+    var limits = imageToneLimits(imageData.data);
+    var dark = gridCandidate(imageData, width, height, limits.dark, false);
+    var bright = gridCandidate(imageData, width, height, limits.bright, true);
+    var result = !dark ? bright : !bright ? dark : (dark.score <= bright.score ? dark : bright);
+    if (!result) {
+      var brightMajor = majorGridCandidate(imageData, width, height, limits.bright, true);
+      var darkMajor = majorGridCandidate(imageData, width, height, limits.dark, false);
+      result = !brightMajor ? darkMajor : !darkMajor ? brightMajor : (brightMajor.score <= darkMajor.score ? brightMajor : darkMajor);
+    }
+    if (!result) result = edgeGridCandidate(imageData, width, height);
+    return { canvas: canvas, grid: result };
+  }
+
+  function drawGridPreview(target, source, grid) {
+    target.width = source.width;
+    target.height = source.height;
+    var context = target.getContext("2d");
+    context.drawImage(source, 0, 0);
+    if (!grid) return;
+    var points = grid.points || [
+      { x: grid.left, y: grid.top },
+      { x: grid.right, y: grid.top },
+      { x: grid.right, y: grid.bottom },
+      { x: grid.left, y: grid.bottom }
+    ];
+    context.save();
+    context.beginPath();
+    context.moveTo(points[0].x, points[0].y);
+    for (var point = 1; point < points.length; point += 1) context.lineTo(points[point].x, points[point].y);
+    context.closePath();
+    context.fillStyle = "rgba(37, 99, 235, 0.13)";
+    context.fill();
+    context.strokeStyle = "#2563eb";
+    context.lineWidth = Math.max(2, Math.round(Math.min(source.width, source.height) / 360));
+    context.stroke();
+    context.globalAlpha = 0.82;
+    context.lineWidth = Math.max(1, context.lineWidth * 0.55);
+    for (var line = 1; line < 9; line += 1) {
+      var ratio = line / 9;
+      var top = { x: points[0].x + (points[1].x - points[0].x) * ratio, y: points[0].y + (points[1].y - points[0].y) * ratio };
+      var bottom = { x: points[3].x + (points[2].x - points[3].x) * ratio, y: points[3].y + (points[2].y - points[3].y) * ratio };
+      var left = { x: points[0].x + (points[3].x - points[0].x) * ratio, y: points[0].y + (points[3].y - points[0].y) * ratio };
+      var right = { x: points[1].x + (points[2].x - points[1].x) * ratio, y: points[1].y + (points[2].y - points[1].y) * ratio };
+      context.beginPath();
+      context.moveTo(top.x, top.y);
+      context.lineTo(bottom.x, bottom.y);
+      context.moveTo(left.x, left.y);
+      context.lineTo(right.x, right.y);
+      context.stroke();
+    }
+    context.restore();
+  }
+
+  var openCvPromise;
+
+  function loadOpenCv() {
+    if (window.cv && window.cv.Mat) return Promise.resolve(window.cv);
+    if (openCvPromise) return openCvPromise;
+    openCvPromise = new Promise(function (resolve, reject) {
+      var script = document.createElement("script");
+      var deadline = Date.now() + 20000;
+      function waitForRuntime() {
+        if (window.cv && window.cv.Mat) {
+          resolve(window.cv);
+        } else if (Date.now() > deadline) {
+          reject(new Error("The local geometry library did not finish loading."));
+        } else {
+          window.setTimeout(waitForRuntime, 80);
+        }
+      }
+      script.async = true;
+      script.src = "https://docs.opencv.org/4.x/opencv.js";
+      script.onload = waitForRuntime;
+      script.onerror = function () { reject(new Error("The local geometry library could not be downloaded.")); };
+      document.head.appendChild(script);
+    });
+    return openCvPromise;
+  }
+
+  function orderGridCorners(points) {
+    var ordered = [null, null, null, null];
+    points.forEach(function (point) {
+      var sum = point.x + point.y;
+      var difference = point.x - point.y;
+      if (!ordered[0] || sum < ordered[0].x + ordered[0].y) ordered[0] = point;
+      if (!ordered[2] || sum > ordered[2].x + ordered[2].y) ordered[2] = point;
+      if (!ordered[1] || difference > ordered[1].x - ordered[1].y) ordered[1] = point;
+      if (!ordered[3] || difference < ordered[3].x - ordered[3].y) ordered[3] = point;
+    });
+    return ordered;
+  }
+
+  function contourGridCandidate(cv, binary, imageArea) {
+    var contours = new cv.MatVector();
+    var hierarchy = new cv.Mat();
+    var best = null;
+    try {
+      cv.findContours(binary, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+      for (var index = 0; index < contours.size(); index += 1) {
+        var contour = contours.get(index);
+        var perimeter = cv.arcLength(contour, true);
+        var approximation = new cv.Mat();
+        cv.approxPolyDP(contour, approximation, perimeter * 0.025, true);
+        var area = Math.abs(cv.contourArea(contour));
+        if (approximation.rows === 4 && cv.isContourConvex(approximation) && area > imageArea * 0.045) {
+          var values = approximation.data32S;
+          var corners = [];
+          for (var point = 0; point < 4; point += 1) corners.push({ x: values[point * 2], y: values[point * 2 + 1] });
+          corners = orderGridCorners(corners);
+          var width = (Math.hypot(corners[1].x - corners[0].x, corners[1].y - corners[0].y) + Math.hypot(corners[2].x - corners[3].x, corners[2].y - corners[3].y)) / 2;
+          var height = (Math.hypot(corners[3].x - corners[0].x, corners[3].y - corners[0].y) + Math.hypot(corners[2].x - corners[1].x, corners[2].y - corners[1].y)) / 2;
+          var aspectPenalty = Math.abs(Math.log(width / height));
+          var score = area * Math.max(0.2, 1 - aspectPenalty);
+          if (width > 60 && height > 60 && (!best || score > best.score)) {
+            best = { points: corners, score: score, confidence: Math.max(0.55, Math.min(0.95, 0.62 + area / imageArea * 0.3 - aspectPenalty * 0.25)) };
+          }
+        }
+        approximation.delete();
+        contour.delete();
+      }
+    } finally {
+      contours.delete();
+      hierarchy.delete();
+    }
+    return best;
+  }
+
+  function detectGridWithContours(sourceCanvas) {
+    return loadOpenCv().then(function (cv) {
+      var source = cv.imread(sourceCanvas);
+      var gray = new cv.Mat();
+      var blurred = new cv.Mat();
+      var edges = new cv.Mat();
+      var threshold = new cv.Mat();
+      var kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+      try {
+        cv.cvtColor(source, gray, cv.COLOR_RGBA2GRAY);
+        cv.medianBlur(gray, blurred, 3);
+        cv.Canny(blurred, edges, 35, 120);
+        cv.dilate(edges, edges, kernel);
+        var edgeCandidate = contourGridCandidate(cv, edges, source.rows * source.cols);
+        cv.adaptiveThreshold(blurred, threshold, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 31, 5);
+        cv.morphologyEx(threshold, threshold, cv.MORPH_CLOSE, kernel);
+        var thresholdCandidate = contourGridCandidate(cv, threshold, source.rows * source.cols);
+        if (!edgeCandidate) return thresholdCandidate;
+        if (!thresholdCandidate) return edgeCandidate;
+        return edgeCandidate.score >= thresholdCandidate.score ? edgeCandidate : thresholdCandidate;
+      } finally {
+        source.delete();
+        gray.delete();
+        blurred.delete();
+        edges.delete();
+        threshold.delete();
+        kernel.delete();
+      }
+    });
+  }
+
   function createImportUi() {
     if (document.querySelector("[data-sudohint-import]")) return;
 
@@ -541,8 +902,25 @@
       '  <div class="sudohint-import-divider"><span>or paste a puzzle</span></div>',
       '  <label class="sudohint-import-label" for="sudohint-import-text">Paste grid or 81-character string</label>',
       '  <textarea id="sudohint-import-text" class="sudohint-import-text" rows="3" spellcheck="false"></textarea>',
+      '  <details class="sudohint-image-import">',
+      '    <summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m0 0-4.5 4.5M12 3l4.5 4.5M5 14.5v4A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-4"/></svg><span>Add a screenshot of your grid</span></summary>',
+      '    <p>Choose a screenshot or a straight-on photo. Detection and reading happen only in your browser.</p>',
+      '    <label class="sudohint-image-select">Choose image<input class="sudohint-image-input" type="file" accept="image/*" capture="environment"></label>',
+      '    <div class="sudohint-image-preview" hidden><canvas class="sudohint-image-canvas"></canvas></div>',
+      '    <div class="sudohint-straightened-preview" hidden>',
+      '      <p><strong>Board straightened</strong> &middot; 81 cells ready for digit reading</p>',
+      '      <canvas class="sudohint-straightened-canvas"></canvas>',
+      '    </div>',
+      '    <div class="sudohint-digit-review" hidden>',
+      '      <div class="sudohint-digit-review-head"><div><strong>Review recognized digits</strong><p class="sudohint-digit-review-help">Reading the large digits in your browser…</p></div></div>',
+      '      <p class="sudohint-digit-review-summary" hidden></p>',
+      '      <div class="sudohint-digit-review-grid" role="group" aria-label="Recognized Sudoku digits" hidden></div>',
+      '      <div class="sudohint-digit-review-actions" hidden><button class="sudohint-use-recognized" type="button">Use in puzzle editor</button></div>',
+      '    </div>',
+      '    <p class="sudohint-image-status" role="status" aria-live="polite"></p>',
+      '  </details>',
+      '  <div class="sudohint-image-divider sudohint-import-divider"><span>or fill the cells below</span></div>',
       '  <div class="sudohint-import-actions">',
-      '    <button class="sudohint-import-secondary" type="button">Use sample</button>',
       '    <button class="sudohint-import-quiet" type="button">Clear</button>',
       '    <button class="sudohint-import-primary" type="button">Load & Hint</button>',
       '  </div>',
@@ -559,9 +937,22 @@
     var editor = widget.querySelector(".sudohint-editor-grid");
     var status = widget.querySelector(".sudohint-import-status");
     var closeButton = widget.querySelector(".sudohint-import-close");
-    var sampleButton = widget.querySelector(".sudohint-import-secondary");
     var clearButton = widget.querySelector(".sudohint-import-quiet");
     var loadButton = widget.querySelector(".sudohint-import-primary");
+    var imageInput = widget.querySelector(".sudohint-image-input");
+    var imagePreview = widget.querySelector(".sudohint-image-preview");
+    var imageCanvas = widget.querySelector(".sudohint-image-canvas");
+    var straightenedPreview = widget.querySelector(".sudohint-straightened-preview");
+    var straightenedCanvas = widget.querySelector(".sudohint-straightened-canvas");
+    var digitReview = widget.querySelector(".sudohint-digit-review");
+    var digitReviewSummary = widget.querySelector(".sudohint-digit-review-summary");
+    var digitReviewGrid = widget.querySelector(".sudohint-digit-review-grid");
+    var digitReviewActions = widget.querySelector(".sudohint-digit-review-actions");
+    var useRecognizedButton = widget.querySelector(".sudohint-use-recognized");
+    var imageStatus = widget.querySelector(".sudohint-image-status");
+    var imageDetectionId = 0;
+    var detectedBoard = null;
+    var detectedAnalysis = null;
 
     for (var cell = 0; cell < 81; cell += 1) {
       var input = document.createElement("input");
@@ -596,6 +987,150 @@
     function setEditorStatus(message, isError) {
       status.textContent = message || "";
       status.classList.toggle("is-error", Boolean(isError));
+    }
+
+    function setImageStatus(message, isError) {
+      imageStatus.textContent = message || "";
+      imageStatus.classList.toggle("is-error", Boolean(isError));
+    }
+
+    function showDigitReview(analysis) {
+      digitReview.hidden = false;
+      digitReviewSummary.hidden = true;
+      digitReviewGrid.hidden = true;
+      digitReviewGrid.innerHTML = "";
+      digitReviewActions.hidden = true;
+      digitReview.dataset.ready = "";
+      var count = analysis.counts.digit;
+      digitReview.querySelector(".sudohint-digit-review-help").textContent = "Reading " + count + " large digits locally. Pencil marks are left blank.";
+    }
+
+    function renderDigitReview(result) {
+      digitReviewSummary.textContent = result.counts.read + " of " + (result.counts.read + result.counts.missed) + " likely full digits were read. Review any amber cells, then use the values in the puzzle editor.";
+      digitReviewSummary.hidden = false;
+      digitReviewGrid.innerHTML = "";
+      result.cells.forEach(function (cell, index) {
+        var input = document.createElement("input");
+        var uncertain = cell.kind === "digit" && (!cell.value || cell.confidence < 70);
+        input.className = "sudohint-digit-review-cell is-" + cell.kind + (uncertain ? " is-uncertain" : "");
+        input.type = "text";
+        input.inputMode = "numeric";
+        input.maxLength = 1;
+        input.autocomplete = "off";
+        input.value = cell.value || "";
+        input.dataset.index = String(index);
+        input.setAttribute("aria-label", "Review row " + (cell.row + 1) + ", column " + (cell.column + 1));
+        if (cell.kind !== "digit") input.setAttribute("title", cell.kind === "pencil" ? "Pencil marks: intentionally left blank" : "Empty cell");
+        else input.setAttribute("title", cell.value ? "Read " + cell.value + " (confidence " + Math.round(cell.confidence || 0) + "%)" : "No digit was read; check this cell");
+        input.addEventListener("input", function () {
+          input.value = input.value.replace(/[^1-9]/g, "").slice(-1);
+          input.classList.remove("is-uncertain");
+        });
+        digitReviewGrid.appendChild(input);
+      });
+      digitReviewGrid.hidden = false;
+      digitReviewActions.hidden = false;
+      digitReview.dataset.ready = "true";
+    }
+
+    function copyRecognizedDigits() {
+      var reviewInputs = digitReviewGrid.querySelectorAll(".sudohint-digit-review-cell");
+      if (!reviewInputs.length) return;
+      var text = Array.prototype.map.call(reviewInputs, function (input) { return input.value || "."; }).join("");
+      fillEditor(editorInputs, text);
+      syncEditorToText();
+      setEditorStatus("Recognized digits are in the editor. Check or correct them, then choose Load & Hint.", false);
+      editor.scrollIntoView({ block: "center", behavior: "smooth" });
+      editorInputs[0].focus();
+    }
+
+    function readDetectedDigits() {
+      if (!detectedBoard || !detectedAnalysis) return;
+      if (!window.SudokuDigitRecognizer) {
+        setImageStatus("The local digit reader did not load. Refresh the page and try again.", true);
+        return;
+      }
+      var detectionId = imageDetectionId;
+      setImageStatus("Loading the local digit reader. The first use may take a moment.", false);
+      window.SudokuDigitRecognizer.recognize(detectedBoard, detectedAnalysis, function (progress) {
+        if (detectionId !== imageDetectionId) return;
+        if (progress.phase === "Reading digits") {
+          digitReview.querySelector(".sudohint-digit-review-help").textContent = "Reading large digits locally: " + progress.loaded + " of " + progress.total + ".";
+          setImageStatus("Reading large digits locally: " + progress.loaded + " of " + progress.total + ".", false);
+        }
+      }).then(function (result) {
+        if (detectionId !== imageDetectionId) return;
+        renderDigitReview(result);
+        setImageStatus("Digits read locally. Review the 9 × 9 grid, then copy the values into the puzzle editor.", false);
+      }).catch(function () {
+        if (detectionId !== imageDetectionId) return;
+        digitReview.querySelector(".sudohint-digit-review-help").textContent = "The digit reader could not start. Choose another image and try again.";
+        setImageStatus("The local digit reader could not start. Check your connection once, then try again.", true);
+      });
+    }
+
+    function detectSelectedImage(file) {
+      if (!file) return;
+      if (!file.type || file.type.indexOf("image/") !== 0) {
+        setImageStatus("Please choose an image file.", true);
+        return;
+      }
+      setImageStatus("Detecting grid locally...", false);
+      imagePreview.hidden = true;
+      straightenedPreview.hidden = true;
+      digitReview.hidden = true;
+      detectedBoard = null;
+      detectedAnalysis = null;
+      var detectionId = imageDetectionId + 1;
+      imageDetectionId = detectionId;
+      var objectUrl = URL.createObjectURL(file);
+      var image = new Image();
+      image.onload = function () {
+        URL.revokeObjectURL(objectUrl);
+        if (!window.SudokuGridDetector) {
+          setImageStatus("The image detector did not load. Refresh the page and try again.", true);
+          return;
+        }
+        setImageStatus("Finding and checking Sudoku grid lines locally...", false);
+        window.SudokuGridDetector.detect(image).then(function (result) {
+          if (detectionId !== imageDetectionId) return;
+          window.SudokuGridDetector.drawPreview(imageCanvas, result.canvas, result.grid);
+          imagePreview.hidden = false;
+          if (result.grid) {
+            setImageStatus("Straightening the detected board and splitting it into 81 cells...", false);
+            window.SudokuGridDetector.straightenGrid(result.canvas, result.grid).then(function (board) {
+              if (detectionId !== imageDetectionId) return;
+              detectedBoard = board;
+              straightenedCanvas.width = board.canvas.width;
+              straightenedCanvas.height = board.canvas.height;
+              straightenedCanvas.getContext("2d").drawImage(board.canvas, 0, 0);
+              straightenedPreview.hidden = false;
+              setImageStatus("Checking each cell for full digits and pencil marks...", false);
+              return window.SudokuGridDetector.analyzeCells(board);
+            }).then(function (analysis) {
+              if (detectionId !== imageDetectionId || !analysis) return;
+              detectedAnalysis = analysis;
+              showDigitReview(analysis);
+              setImageStatus("Board straightened. Reading the large digits locally…", false);
+              readDetectedDigits();
+            }).catch(function () {
+              if (detectionId !== imageDetectionId) return;
+              setImageStatus("Grid found, but the board could not be straightened. Try a clearer image.", true);
+            });
+          } else {
+            setImageStatus("No reliable Sudoku board was found. Try cropping closer to the board or using a clearer photo.", true);
+          }
+        }).catch(function () {
+          if (detectionId !== imageDetectionId) return;
+          imagePreview.hidden = true;
+          setImageStatus("The local geometry detector could not run. Check your connection once, then try the image again.", true);
+        });
+      };
+      image.onerror = function () {
+        URL.revokeObjectURL(objectUrl);
+        setImageStatus("Could not open this image. Try a PNG or JPEG screenshot.", true);
+      };
+      image.src = objectUrl;
     }
 
     function syncEditorToText() {
@@ -645,18 +1180,16 @@
     fab.addEventListener("click", function () { setOpen(true); });
     closeButton.addEventListener("click", function () { setOpen(false); });
     backdrop.addEventListener("click", function () { setOpen(false); });
-    sampleButton.addEventListener("click", function () {
-      textarea.value = samplePuzzle;
-      fillEditor(editorInputs, samplePuzzle);
-      setEditorStatus("Sample puzzle loaded into the editor.", false);
-      textarea.focus();
-    });
     clearButton.addEventListener("click", function () {
       fillEditor(editorInputs, "");
       textarea.value = "";
       setEditorStatus("", false);
       editorInputs[0].focus();
     });
+    imageInput.addEventListener("change", function () {
+      detectSelectedImage(imageInput.files && imageInput.files[0]);
+    });
+    useRecognizedButton.addEventListener("click", copyRecognizedDigits);
     loadButton.addEventListener("click", loadPuzzle);
     textarea.addEventListener("input", syncTextToEditor);
     Array.prototype.forEach.call(editorInputs, function (input, index) {
@@ -717,6 +1250,17 @@
 
   function startCustomUi() {
     createImportUi();
+    document.documentElement.setAttribute("data-theme", "light");
+    var themeToggleAttempts = 0;
+    var removeThemeToggle = function () {
+      document.querySelectorAll('[data-testid="theme-toggle"]').forEach(function (toggle) {
+        toggle.remove();
+      });
+      themeToggleAttempts += 1;
+      if (themeToggleAttempts > 40) window.clearInterval(themeToggleTimer);
+    };
+    var themeToggleTimer = window.setInterval(removeThemeToggle, 50);
+    removeThemeToggle();
 
     var attempts = 0;
     var techniqueTimer = window.setInterval(function () {

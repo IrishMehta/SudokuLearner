@@ -1,0 +1,226 @@
+/* SudoHint's single, fixed palette: linen paper, Prussian-blue ink, and
+   subdued copper accents. Loaded after the legacy styles so OS/theme toggles
+   cannot change the visual mode. */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  color-scheme: light !important;
+  --color-bg: #f7f2e8;
+  --color-surface: #fffaf2;
+  --color-surface-2: #fae4c2;
+  --color-surface-offset: #fae4c2;
+  --color-surface-offset-2: #f4bf98;
+  --color-surface-dynamic: #e7c6a8;
+  --color-divider: #d9b99a;
+  --color-border: #bc8764;
+  --color-text: #0e213f;
+  --color-text-muted: #5b493d;
+  --color-text-faint: #856d5d;
+  --color-text-inverse: #f7f2e8;
+  --color-primary: #0e213f;
+  --color-primary-hover: #1c3967;
+  --color-primary-active: #08162b;
+  --color-primary-highlight: #fae4c2;
+  --color-success: #1f6a50;
+  --color-success-highlight: #dfeadb;
+  --color-error: #75352f;
+  --color-error-highlight: #f7ded6;
+  --color-orange: #8b4f32;
+  --color-orange-highlight: #fae4c2;
+  --color-blue: #0e213f;
+  --color-blue-highlight: #e2eaf4;
+  --color-hint-target: #0e213f;
+  --color-hint-target-bg: #fae4c2;
+  --color-hint-highlight-bg: #fff3d8;
+  --color-hint-elim-bg: #f7ded6;
+  --sudohint-ink: #0e213f;
+  --sudohint-muted: #5b493d;
+  --sudohint-line: #d9b99a;
+  --sudohint-blue: #0e213f;
+  --sudohint-blue-soft: #fae4c2;
+}
+
+body {
+  background: #f7f2e8;
+}
+
+.app-header,
+.controls-bar,
+.hint-panel,
+.hint-empty,
+.technique-ref,
+.hint-history,
+.sudohint-import-dialog {
+  box-shadow: 0 10px 26px rgb(14 33 63 / 8%);
+}
+
+.sudohint-import-backdrop {
+  background: rgb(14 33 63 / 42%);
+}
+
+.ref-dot {
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 0 2px #f7f2e8;
+}
+
+/* Example cards use a dedicated teaching key. The colours are intentionally
+   farther apart than the decorative palette so each logical role is readable
+   at a glance. */
+.sudohint-example-cell.target {
+  color: #1d5b98;
+  background: #dceaf7;
+  box-shadow: inset 0 0 0 2px #1d5b98;
+}
+
+.sudohint-example-cell.cause {
+  color: #9a552f;
+  background: #f8d6b7;
+  box-shadow: inset 0 0 0 2px #9a552f;
+}
+
+.sudohint-example-cell.elimination {
+  color: #983f3c;
+  background-color: #f5d8d2;
+  background-image: repeating-linear-gradient(-45deg, transparent 0 7px, rgb(152 63 60 / 10%) 7px 9px);
+  box-shadow: inset 0 0 0 2px #983f3c;
+}
+
+.sudohint-example-legend {
+  color: var(--color-text);
+  font-weight: 650;
+}
+
+.sudohint-example-legend i {
+  width: 13px;
+  height: 13px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+
+.sudohint-example-legend i.given {
+  color: #0e213f;
+  background: #0e213f;
+}
+
+.sudohint-example-legend i.target {
+  color: #1d5b98;
+  background: #dceaf7;
+}
+
+.sudohint-example-legend i.cause {
+  color: #9a552f;
+  background: #f8d6b7;
+}
+
+.sudohint-example-legend i.elimination {
+  color: #983f3c;
+  background: repeating-linear-gradient(-45deg, #f5d8d2 0 5px, #e8b7af 5px 7px);
+}
+
+[data-testid="theme-toggle"] {
+  display: none !important;
+}
+
+/* Quiet hierarchy: sections are separated by space and fine rules instead of
+   being placed inside a stack of rounded containers. */
+.controls-bar {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.hint-panel,
+.hint-empty,
+.hint-history,
+.technique-ref {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent;
+  box-shadow: none;
+}
+
+.hint-empty {
+  min-height: 0;
+  padding: 28px 8px;
+  border-block: 1px solid var(--color-divider) !important;
+}
+
+.technique-ref > h3,
+.technique-ref .ref-title,
+.hint-history > h3 {
+  padding-inline: 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.technique-list {
+  padding: 0;
+  gap: 0;
+  background: transparent;
+}
+
+.technique-list .ref-item,
+.technique-list .ref-item:nth-child(odd),
+.technique-list .ref-item:last-child {
+  min-height: 0;
+  padding: 16px 10px;
+  border: 0 !important;
+  border-bottom: 1px solid var(--color-divider) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.technique-list .ref-item:nth-child(odd) {
+  border-right: 1px solid var(--color-divider) !important;
+}
+
+.technique-list .ref-item:hover {
+  background: #fae4c2 !important;
+}
+
+.technique-example-trigger {
+  padding-inline: 0;
+  color: var(--color-primary);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sudohint-image-import {
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--color-divider);
+  border-radius: 0;
+  background: transparent;
+}
+
+.sudohint-image-import summary {
+  padding-block: 5px;
+}
+
+.sudohint-image-select {
+  min-height: auto;
+  padding: 0;
+  color: var(--color-primary);
+  border-radius: 0;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sudohint-import-dialog {
+  border: 0;
+  border-radius: 16px;
+}
+
+.sudohint-digit-review,
+.sudohint-straightened-preview,
+.sudohint-image-preview {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
