@@ -498,6 +498,19 @@
     if (!list) return;
     createTechniqueExampleModal();
 
+    var section = list.closest(".technique-ref");
+    if (section && !section.querySelector(".sudohint-technique-legend")) {
+      var legend = document.createElement("div");
+      legend.className = "sudohint-technique-legend";
+      legend.setAttribute("aria-label", "Technique difficulty levels");
+      legend.innerHTML =
+        '<span class="basic"><i></i>Basic</span>' +
+        '<span class="intermediate"><i></i>Intermediate</span>' +
+        '<span class="advanced"><i></i>Advanced</span>' +
+        '<span class="expert"><i></i>Expert</span>';
+      list.parentNode.insertBefore(legend, list);
+    }
+
     Array.prototype.forEach.call(list.querySelectorAll(".ref-item"), function (item) {
       if (item.querySelector(".technique-example-trigger")) return;
       var nameElement = item.querySelector(".ref-name");
@@ -1248,19 +1261,45 @@
     });
   }
 
+  function enhanceHintKey() {
+    var panel = document.querySelector(".hint-panel");
+    if (!panel) return;
+    var legend = panel.querySelector(".hint-legend");
+    if (!legend) return;
+
+    if (!panel.querySelector(".sudohint-hint-key-title")) {
+      var title = document.createElement("p");
+      title.className = "sudohint-hint-key-title";
+      title.textContent = "HOW TO READ THIS HINT";
+      legend.parentNode.insertBefore(title, legend);
+    }
+
+    if (!legend.querySelector(".given-dot")) {
+      var given = document.createElement("div");
+      given.className = "legend-item sudohint-given-key";
+      given.innerHTML = '<span class="legend-dot given-dot"></span><span>Given number</span>';
+      legend.insertBefore(given, legend.firstChild);
+    }
+
+    var isPlacement = Boolean(panel.querySelector(".hint-digit"));
+    legend.querySelectorAll(".legend-item").forEach(function (item) {
+      var label = item.querySelector("span:last-child");
+      if (!label) return;
+      var nextLabel = "";
+      if (item.querySelector(".target-dot")) nextLabel = isPlacement ? "Place this digit" : "Key pattern cells";
+      if (item.querySelector(".cause-dot")) nextLabel = "Supporting cells";
+      if (item.querySelector(".elim-dot")) nextLabel = "Remove this candidate";
+      if (nextLabel && label.textContent !== nextLabel) label.textContent = nextLabel;
+    });
+  }
+
   function startCustomUi() {
     createImportUi();
-    document.documentElement.setAttribute("data-theme", "light");
-    var themeToggleAttempts = 0;
-    var removeThemeToggle = function () {
-      document.querySelectorAll('[data-testid="theme-toggle"]').forEach(function (toggle) {
-        toggle.remove();
-      });
-      themeToggleAttempts += 1;
-      if (themeToggleAttempts > 40) window.clearInterval(themeToggleTimer);
-    };
-    var themeToggleTimer = window.setInterval(removeThemeToggle, 50);
-    removeThemeToggle();
+
+    enhanceHintKey();
+    if (window.MutationObserver) {
+      new MutationObserver(enhanceHintKey).observe(document.body, { childList: true, subtree: true });
+    }
 
     var attempts = 0;
     var techniqueTimer = window.setInterval(function () {

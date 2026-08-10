@@ -1,9 +1,7 @@
-/* SudoHint's single, fixed palette: linen paper, Prussian-blue ink, and
-   subdued copper accents. Loaded after the legacy styles so OS/theme toggles
-   cannot change the visual mode. */
-:root,
-:root[data-theme="light"],
-:root[data-theme="dark"] {
+/* SudoHint's palettes: linen paper in light mode, a muted Prussian-blue
+   reading surface in dark mode. Loaded after the legacy styles. */
+:root:not([data-theme="dark"]),
+:root[data-theme="light"] {
   color-scheme: light !important;
   --color-bg: #f7f2e8;
   --color-surface: #fffaf2;
@@ -38,10 +36,11 @@
   --sudohint-line: #d9b99a;
   --sudohint-blue: #0e213f;
   --sudohint-blue-soft: #fae4c2;
+  --sudohint-hover-surface: #fae4c2;
 }
 
 body {
-  background: #f7f2e8;
+  background: var(--color-bg);
 }
 
 .app-header,
@@ -61,7 +60,7 @@ body {
 .ref-dot {
   width: 10px;
   height: 10px;
-  box-shadow: 0 0 0 2px #f7f2e8;
+  box-shadow: none;
 }
 
 /* Example cards use a dedicated teaching key. The colours are intentionally
@@ -118,8 +117,214 @@ body {
   background: repeating-linear-gradient(-45deg, #f5d8d2 0 5px, #e8b7af 5px 7px);
 }
 
+/* Use the same teaching key for live hints as the example cards. */
+.sudoku-cell.hint-target {
+  background: #dceaf7 !important;
+  box-shadow: inset 0 0 0 2px #1d5b98 !important;
+}
+
+.sudoku-cell.hint-highlight {
+  background: #f8d6b7 !important;
+  box-shadow: inset 0 0 0 2px #9a552f !important;
+}
+
+.sudoku-cell.hint-elim {
+  background-color: #f5d8d2 !important;
+  background-image: repeating-linear-gradient(-45deg, transparent 0 7px, rgb(152 63 60 / 10%) 7px 9px) !important;
+  box-shadow: inset 0 0 0 2px #983f3c !important;
+}
+
+.sudohint-hint-key-title {
+  margin: 14px 0 2px;
+  color: var(--color-text-faint);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.hint-legend {
+  gap: 8px 14px;
+  padding: 8px 0 12px;
+}
+
+.legend-item {
+  color: var(--color-text);
+  font-weight: 650;
+}
+
+.legend-dot {
+  width: 13px;
+  height: 13px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+
+.given-dot {
+  color: #0e213f;
+  background: #0e213f;
+}
+
+.target-dot {
+  color: #1d5b98;
+  background: #dceaf7;
+}
+
+.cause-dot {
+  color: #9a552f;
+  background: #f8d6b7;
+}
+
+.elim-dot {
+  color: #983f3c;
+  background: repeating-linear-gradient(-45deg, #f5d8d2 0 5px, #e8b7af 5px 7px);
+}
+
+/* Match the live-board removal mark to the example cards: strike only the
+   affected pencil digit, diagonally and lightly. */
+.candidate.elim-candidate {
+  position: relative;
+  color: #983f3c;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.candidate.elim-candidate::after {
+  position: absolute;
+  top: 50%;
+  left: 7%;
+  width: 86%;
+  height: 1px;
+  background: currentColor;
+  content: "";
+  opacity: 0.9;
+  transform: rotate(-42deg);
+  transform-origin: center;
+}
+
 [data-testid="theme-toggle"] {
-  display: none !important;
+  display: inline-flex !important;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: transparent;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark !important;
+  --color-bg: #0b172b;
+  --color-surface: #11223b;
+  --color-surface-2: #162a46;
+  --color-surface-offset: #172d49;
+  --color-surface-offset-2: #203955;
+  --color-surface-dynamic: #2c4867;
+  --color-divider: #304b68;
+  --color-border: #6d7f95;
+  --color-text: #f7f2e8;
+  --color-text-muted: #d4c8b8;
+  --color-text-faint: #91a4b9;
+  --color-text-inverse: #0b172b;
+  --color-primary: #a9c8e5;
+  --color-primary-hover: #c5d9ec;
+  --color-primary-active: #e0edf7;
+  --color-primary-highlight: #173a5d;
+  --color-success: #79b998;
+  --color-success-highlight: #173f36;
+  --color-error: #e18880;
+  --color-error-highlight: #48292d;
+  --color-orange: #dea077;
+  --color-orange-highlight: #442d28;
+  --color-blue: #a9c8e5;
+  --color-blue-highlight: #173a5d;
+  --color-hint-target: #82bee9;
+  --color-hint-target-bg: #173d60;
+  --color-hint-highlight-bg: #493229;
+  --color-hint-elim-bg: #49292e;
+  --sudohint-ink: #f7f2e8;
+  --sudohint-muted: #d4c8b8;
+  --sudohint-line: #526a83;
+  --sudohint-blue: #a9c8e5;
+  --sudohint-blue-soft: #173a5d;
+  --sudohint-hover-surface: #172d49;
+}
+
+:root[data-theme="dark"] .app-header,
+:root[data-theme="dark"] .controls-bar,
+:root[data-theme="dark"] .hint-panel,
+:root[data-theme="dark"] .hint-empty,
+:root[data-theme="dark"] .technique-ref,
+:root[data-theme="dark"] .hint-history,
+:root[data-theme="dark"] .sudohint-import-dialog {
+  box-shadow: 0 10px 28px rgb(0 0 0 / 24%);
+}
+
+:root[data-theme="dark"] .sudohint-import-backdrop {
+  background: rgb(0 0 0 / 62%);
+}
+
+/* Light-blue actions need dark lettering; white text washes out against the
+   pale blue used as the dark theme's primary action colour. */
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .btn-hint:not(:disabled),
+:root[data-theme="dark"] .hint-badge,
+:root[data-theme="dark"] .apply-next-btn,
+:root[data-theme="dark"] .sudohint-import-fab,
+:root[data-theme="dark"] .sudohint-import-primary,
+:root[data-theme="dark"] .sudohint-image-select,
+:root[data-theme="dark"] .sudohint-use-recognized {
+  color: #0b172b !important;
+}
+
+/* Keep the teaching key vivid in dark mode. These are semantic colours, not
+   decorative accents: the same blue, copper and red meanings appear in a
+   live hint and in its matching technique example. */
+:root[data-theme="dark"] .sudohint-example-cell.target,
+:root[data-theme="dark"] .sudoku-cell.hint-target {
+  color: #a9d8f5;
+  background: #173d60 !important;
+  box-shadow: inset 0 0 0 2px #82bee9 !important;
+}
+
+:root[data-theme="dark"] .sudohint-example-cell.cause,
+:root[data-theme="dark"] .sudoku-cell.hint-highlight {
+  color: #f0bc95;
+  background: #493229 !important;
+  box-shadow: inset 0 0 0 2px #dea077 !important;
+}
+
+:root[data-theme="dark"] .sudohint-example-cell.elimination,
+:root[data-theme="dark"] .sudoku-cell.hint-elim {
+  color: #f0a19b;
+  background-color: #49292e !important;
+  background-image: repeating-linear-gradient(-45deg, transparent 0 7px, rgb(240 161 155 / 13%) 7px 9px) !important;
+  box-shadow: inset 0 0 0 2px #e18880 !important;
+}
+
+:root[data-theme="dark"] .sudohint-example-legend i.given,
+:root[data-theme="dark"] .given-dot {
+  color: #f7f2e8;
+  background: #f7f2e8;
+}
+
+:root[data-theme="dark"] .sudohint-example-legend i.target,
+:root[data-theme="dark"] .target-dot {
+  color: #82bee9;
+  background: #173d60;
+}
+
+:root[data-theme="dark"] .sudohint-example-legend i.cause,
+:root[data-theme="dark"] .cause-dot {
+  color: #dea077;
+  background: #493229;
+}
+
+:root[data-theme="dark"] .sudohint-example-legend i.elimination,
+:root[data-theme="dark"] .elim-dot {
+  color: #e18880;
+  background: repeating-linear-gradient(-45deg, #49292e 0 5px, #683d43 5px 7px);
+}
+
+:root[data-theme="dark"] .candidate.elim-candidate {
+  color: #f0a19b;
 }
 
 /* Quiet hierarchy: sections are separated by space and fine rules instead of
@@ -155,6 +360,40 @@ body {
   border-bottom: 1px solid var(--color-divider);
 }
 
+.technique-ref > h3,
+.technique-ref .ref-title {
+  border-bottom: 0;
+}
+
+.sudohint-technique-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 10px 0 12px;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-divider);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.sudohint-technique-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sudohint-technique-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sudohint-technique-legend .basic { color: var(--color-success); }
+.sudohint-technique-legend .intermediate { color: var(--color-blue); }
+.sudohint-technique-legend .advanced { color: var(--color-orange); }
+.sudohint-technique-legend .expert { color: var(--color-error); }
+
 .technique-list {
   padding: 0;
   gap: 0;
@@ -164,6 +403,8 @@ body {
 .technique-list .ref-item,
 .technique-list .ref-item:nth-child(odd),
 .technique-list .ref-item:last-child {
+  position: relative;
+  isolation: isolate;
   min-height: 0;
   padding: 16px 10px;
   border: 0 !important;
@@ -172,22 +413,50 @@ body {
   background: transparent !important;
 }
 
+.technique-list .ref-item::before {
+  position: absolute;
+  inset: 5px 7px;
+  z-index: 0;
+  border-radius: 9px;
+  background: var(--sudohint-hover-surface);
+  box-shadow: 0 4px 12px rgb(14 33 63 / 9%);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.technique-list .ref-item > * {
+  position: relative;
+  z-index: 1;
+}
+
 .technique-list .ref-item:nth-child(odd) {
   border-right: 1px solid var(--color-divider) !important;
 }
 
-.technique-list .ref-item:hover {
-  background: #fae4c2 !important;
+.technique-list .ref-item:hover::before {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .technique-example-trigger {
-  padding-inline: 0;
+  padding: 3px 6px;
   color: var(--color-primary);
   border: 0;
-  border-radius: 0;
+  border-radius: 6px;
   background: transparent;
   text-decoration: underline;
   text-underline-offset: 3px;
+  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.technique-example-trigger:hover {
+  background: var(--color-primary-highlight);
+  box-shadow: 0 3px 8px rgb(14 33 63 / 10%);
+  text-decoration: none;
+  transform: translateY(-1px);
 }
 
 .sudohint-image-import {
@@ -204,12 +473,20 @@ body {
 
 .sudohint-image-select {
   min-height: auto;
-  padding: 0;
+  padding: 3px 6px;
   color: var(--color-primary);
-  border-radius: 0;
+  border-radius: 6px;
   background: transparent;
   text-decoration: underline;
   text-underline-offset: 3px;
+  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.sudohint-image-select:hover {
+  background: var(--color-primary-highlight);
+  box-shadow: 0 3px 8px rgb(14 33 63 / 10%);
+  text-decoration: none;
+  transform: translateY(-1px);
 }
 
 .sudohint-import-dialog {
