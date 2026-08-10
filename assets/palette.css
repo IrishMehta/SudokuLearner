@@ -78,6 +78,18 @@ body {
   box-shadow: inset 0 0 0 2px #9a552f;
 }
 
+.sudohint-example-cell.color-a {
+  color: #1f5f82;
+  background: #d7edf5;
+  box-shadow: inset 0 0 0 2px #1f5f82;
+}
+
+.sudohint-example-cell.color-b {
+  color: #654b86;
+  background: #eadcf5;
+  box-shadow: inset 0 0 0 2px #654b86;
+}
+
 .sudohint-example-cell.elimination {
   color: #983f3c;
   background-color: #f5d8d2;
@@ -110,6 +122,16 @@ body {
 .sudohint-example-legend i.cause {
   color: #9a552f;
   background: #f8d6b7;
+}
+
+.sudohint-example-legend i.color-a {
+  color: #1f5f82;
+  background: #d7edf5;
+}
+
+.sudohint-example-legend i.color-b {
+  color: #654b86;
+  background: #eadcf5;
 }
 
 .sudohint-example-legend i.elimination {
@@ -211,40 +233,40 @@ body {
 
 :root[data-theme="dark"] {
   color-scheme: dark !important;
-  --color-bg: #0b172b;
-  --color-surface: #11223b;
-  --color-surface-2: #162a46;
-  --color-surface-offset: #172d49;
-  --color-surface-offset-2: #203955;
-  --color-surface-dynamic: #2c4867;
-  --color-divider: #304b68;
-  --color-border: #6d7f95;
-  --color-text: #f7f2e8;
-  --color-text-muted: #d4c8b8;
-  --color-text-faint: #91a4b9;
-  --color-text-inverse: #0b172b;
-  --color-primary: #a9c8e5;
-  --color-primary-hover: #c5d9ec;
-  --color-primary-active: #e0edf7;
-  --color-primary-highlight: #173a5d;
-  --color-success: #79b998;
-  --color-success-highlight: #173f36;
-  --color-error: #e18880;
-  --color-error-highlight: #48292d;
-  --color-orange: #dea077;
-  --color-orange-highlight: #442d28;
-  --color-blue: #a9c8e5;
-  --color-blue-highlight: #173a5d;
-  --color-hint-target: #0b172b;
-  --color-hint-target-bg: #a9c8e5;
-  --color-hint-highlight-bg: #493229;
-  --color-hint-elim-bg: #49292e;
-  --sudohint-ink: #f7f2e8;
-  --sudohint-muted: #d4c8b8;
-  --sudohint-line: #526a83;
-  --sudohint-blue: #a9c8e5;
-  --sudohint-blue-soft: #173a5d;
-  --sudohint-hover-surface: #172d49;
+  --color-bg: #121923;
+  --color-surface: #1a2430;
+  --color-surface-2: #263342;
+  --color-surface-offset: #202c39;
+  --color-surface-offset-2: #314153;
+  --color-surface-dynamic: #42546a;
+  --color-divider: #3a4a5d;
+  --color-border: #6f8195;
+  --color-text: #f7f3ec;
+  --color-text-muted: #c7d0da;
+  --color-text-faint: #94a4b7;
+  --color-text-inverse: #0c1724;
+  --color-primary: #86bdf2;
+  --color-primary-hover: #acd3f6;
+  --color-primary-active: #d2e7fa;
+  --color-primary-highlight: #234460;
+  --color-success: #72d39b;
+  --color-success-highlight: #17493a;
+  --color-error: #f17d82;
+  --color-error-highlight: #512c34;
+  --color-orange: #f0ab63;
+  --color-orange-highlight: #533725;
+  --color-blue: #81b8ff;
+  --color-blue-highlight: #1f4265;
+  --color-hint-target: #0c1724;
+  --color-hint-target-bg: #86bdf2;
+  --color-hint-highlight-bg: #533725;
+  --color-hint-elim-bg: #512c34;
+  --sudohint-ink: #f7f3ec;
+  --sudohint-muted: #c7d0da;
+  --sudohint-line: #4d6075;
+  --sudohint-blue: #86bdf2;
+  --sudohint-blue-soft: #234460;
+  --sudohint-hover-surface: #263342;
 }
 
 :root[data-theme="dark"] .app-header,
@@ -261,15 +283,15 @@ body {
   background: rgb(0 0 0 / 62%);
 }
 
-/* The board gets its own quieter slate treatment. It stays distinct from the
-   page background without looking like a patchwork of saturated blues. */
+/* The board remains intentionally neutral so the teaching colours read as
+   functions, rather than blending into the decoration. */
 :root[data-theme="dark"] .sudoku-grid,
 :root[data-theme="dark"] .sudoku-cell.box-even {
-  background: #1b2633;
+  background: #18212c;
 }
 
 :root[data-theme="dark"] .sudoku-cell.box-odd {
-  background: #263542;
+  background: #24303d;
 }
 
 :root[data-theme="dark"] .sudoku-cell {
@@ -279,15 +301,15 @@ body {
 :root[data-theme="dark"] .sudoku-cell:nth-child(3n):not(:nth-child(9n)),
 :root[data-theme="dark"] .sudoku-cell:nth-child(n+19):nth-child(-n+27),
 :root[data-theme="dark"] .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
-  border-color: #d4dde5;
+  border-color: #d8e1eb;
 }
 
 :root[data-theme="dark"] .candidate {
-  color: #d8e1e9;
+  color: #d7e0eb;
 }
 
-/* Light-blue actions need dark lettering; white text washes out against the
-   pale blue used as the dark theme's primary action colour. */
+/* Pale-blue actions use dark lettering so the label remains as clear as the
+   action itself. */
 :root[data-theme="dark"] .btn-primary,
 :root[data-theme="dark"] .btn-hint:not(:disabled),
 :root[data-theme="dark"] .hint-badge,
@@ -296,68 +318,89 @@ body {
 :root[data-theme="dark"] .sudohint-import-primary,
 :root[data-theme="dark"] .sudohint-image-select,
 :root[data-theme="dark"] .sudohint-use-recognized {
-  color: #0b172b !important;
+  color: #0c1724 !important;
 }
 
-/* Keep the teaching key vivid in dark mode. These are semantic colours, not
-   decorative accents: the same blue, copper and red meanings appear in a
-   live hint and in its matching technique example. */
+/* Teaching colours are deliberately farther apart than decorative colours:
+   blue = result, amber = pattern, red = removal. */
 :root[data-theme="dark"] .sudohint-example-cell.target,
 :root[data-theme="dark"] .sudoku-cell.hint-target {
-  color: #0b172b;
-  background: #a9c8e5 !important;
-  box-shadow: inset 0 0 0 2px #e0edf7 !important;
+  color: #0c1724;
+  background: #86bdf2 !important;
+  box-shadow: inset 0 0 0 2px #d2e7fa !important;
 }
 
 :root[data-theme="dark"] .sudoku-cell.hint-target .cell-value {
-  color: #0b172b !important;
+  color: #0c1724 !important;
 }
 
 :root[data-theme="dark"] .sudoku-cell.hint-target .candidate {
-  color: #0b172b !important;
+  color: #0c1724 !important;
 }
 
 :root[data-theme="dark"] .sudohint-example-cell.cause,
 :root[data-theme="dark"] .sudoku-cell.hint-highlight {
-  color: #f0bc95;
-  background: #493229 !important;
-  box-shadow: inset 0 0 0 2px #dea077 !important;
+  color: #ffe0be;
+  background: #533725 !important;
+  box-shadow: inset 0 0 0 2px #f0ab63 !important;
+}
+
+:root[data-theme="dark"] .sudohint-example-cell.color-a {
+  color: #d9f3fb;
+  background: #235166 !important;
+  box-shadow: inset 0 0 0 2px #8fd6ee !important;
+}
+
+:root[data-theme="dark"] .sudohint-example-cell.color-b {
+  color: #f0ddff;
+  background: #503b69 !important;
+  box-shadow: inset 0 0 0 2px #d9b5f5 !important;
 }
 
 :root[data-theme="dark"] .sudohint-example-cell.elimination,
 :root[data-theme="dark"] .sudoku-cell.hint-elim {
-  color: #f0a19b;
-  background-color: #49292e !important;
-  background-image: repeating-linear-gradient(-45deg, transparent 0 7px, rgb(240 161 155 / 13%) 7px 9px) !important;
-  box-shadow: inset 0 0 0 2px #e18880 !important;
+  color: #ffd2d4;
+  background-color: #512c34 !important;
+  background-image: repeating-linear-gradient(-45deg, transparent 0 7px, rgb(241 125 130 / 17%) 7px 9px) !important;
+  box-shadow: inset 0 0 0 2px #f17d82 !important;
 }
 
 :root[data-theme="dark"] .sudohint-example-legend i.given,
 :root[data-theme="dark"] .given-dot {
-  color: #f7f2e8;
-  background: #f7f2e8;
+  color: #f7f3ec;
+  background: #f7f3ec;
 }
 
 :root[data-theme="dark"] .sudohint-example-legend i.target,
 :root[data-theme="dark"] .target-dot {
-  color: #0b172b;
-  background: #a9c8e5;
+  color: #0c1724;
+  background: #86bdf2;
 }
 
 :root[data-theme="dark"] .sudohint-example-legend i.cause,
 :root[data-theme="dark"] .cause-dot {
-  color: #dea077;
-  background: #493229;
+  color: #f0ab63;
+  background: #533725;
+}
+
+:root[data-theme="dark"] .sudohint-example-legend i.color-a {
+  color: #8fd6ee;
+  background: #235166;
+}
+
+:root[data-theme="dark"] .sudohint-example-legend i.color-b {
+  color: #d9b5f5;
+  background: #503b69;
 }
 
 :root[data-theme="dark"] .sudohint-example-legend i.elimination,
 :root[data-theme="dark"] .elim-dot {
-  color: #e18880;
-  background: repeating-linear-gradient(-45deg, #49292e 0 5px, #683d43 5px 7px);
+  color: #f17d82;
+  background: repeating-linear-gradient(-45deg, #512c34 0 5px, #733f4b 5px 7px);
 }
 
 :root[data-theme="dark"] .candidate.elim-candidate {
-  color: #f0a19b;
+  color: #ffd2d4;
 }
 
 /* Quiet hierarchy: sections are separated by space and fine rules instead of
@@ -535,9 +578,77 @@ body {
   transform: translateY(-1px);
 }
 
+/* Invalid values are rejected before they touch the board. The brief shake is
+   visible everywhere; supported mobile browsers also receive a short haptic
+   pulse from the input handler. */
+.sudoku-cell.invalid-move {
+  z-index: 6;
+  background: #f7ded6 !important;
+  box-shadow: inset 0 0 0 2px #983f3c !important;
+  animation: sudohint-invalid-move 420ms ease both;
+}
+
+@keyframes sudohint-invalid-move {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  45% { transform: translateX(4px); }
+  70% { transform: translateX(-2px); }
+}
+
+:root[data-theme="dark"] .sudoku-cell.invalid-move {
+  background: #512c34 !important;
+  box-shadow: inset 0 0 0 2px #f17d82 !important;
+}
+
 .sudohint-import-dialog {
   border: 0;
   border-radius: 16px;
+}
+
+.sudohint-example-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.sudohint-example-variant {
+  color: var(--color-text-faint);
+  font-size: 0.72rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.sudohint-example-next {
+  min-height: 32px;
+  padding: 4px 8px;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.sudohint-example-next:hover {
+  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+@media (max-width: 540px) {
+  .sudohint-example-actions {
+    gap: 5px;
+  }
+
+  .sudohint-example-variant {
+    display: none;
+  }
+
+  .sudohint-example-next {
+    padding-inline: 6px;
+  }
 }
 
 .sudohint-digit-review,
@@ -546,4 +657,169 @@ body {
   border: 0;
   border-radius: 0;
   background: transparent;
+}
+
+/* Light mode gets its own quieter material treatment: paper-like depth,
+   precise controls, and clear interactive affordances without adding cards
+   around every section. */
+:root:not([data-theme="dark"]) body,
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(900px 520px at 8% -12%, rgb(244 191 152 / 23%), transparent 65%),
+    radial-gradient(760px 460px at 100% 12%, rgb(250 228 194 / 62%), transparent 68%),
+    #f7f2e8;
+}
+
+:root:not([data-theme="dark"]) .app-header,
+:root[data-theme="light"] .app-header {
+  background: rgb(255 251 245 / 88%);
+  border-color: rgb(188 135 100 / 35%);
+  box-shadow: 0 1px 0 rgb(14 33 63 / 4%), 0 8px 22px rgb(83 56 34 / 5%);
+}
+
+:root:not([data-theme="dark"]) .app-header .logo {
+  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 72%));
+}
+
+:root:not([data-theme="dark"]) .app-header .icon-btn,
+:root[data-theme="light"] .app-header .icon-btn {
+  border-color: rgb(188 135 100 / 62%);
+  background: rgb(255 253 248 / 72%);
+  box-shadow: 0 2px 5px rgb(83 56 34 / 5%);
+}
+
+:root:not([data-theme="dark"]) .app-header .icon-btn:hover,
+:root[data-theme="light"] .app-header .icon-btn:hover {
+  background: #fae4c2;
+  border-color: #a96f4f;
+  box-shadow: 0 5px 12px rgb(83 56 34 / 10%);
+}
+
+:root:not([data-theme="dark"]) .difficulty-selector,
+:root[data-theme="light"] .difficulty-selector {
+  padding: 4px;
+  border-color: rgb(188 135 100 / 42%);
+  border-radius: 10px;
+  background: rgb(250 228 194 / 66%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 62%);
+}
+
+:root:not([data-theme="dark"]) .diff-btn,
+:root[data-theme="light"] .diff-btn {
+  border-radius: 7px;
+  font-weight: 600;
+}
+
+:root:not([data-theme="dark"]) .diff-btn.active,
+:root[data-theme="light"] .diff-btn.active {
+  background: #fffdf8;
+  box-shadow: 0 2px 7px rgb(83 56 34 / 12%), inset 0 0 0 1px rgb(188 135 100 / 16%);
+}
+
+:root:not([data-theme="dark"]) .btn-primary,
+:root[data-theme="light"] .btn-primary {
+  box-shadow: 0 5px 11px rgb(14 33 63 / 18%), inset 0 1px 0 rgb(255 255 255 / 12%);
+}
+
+:root:not([data-theme="dark"]) .btn-primary:hover:not(:disabled),
+:root[data-theme="light"] .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 8px 16px rgb(14 33 63 / 23%), inset 0 1px 0 rgb(255 255 255 / 16%);
+}
+
+:root:not([data-theme="dark"]) .btn-hint,
+:root[data-theme="light"] .btn-hint,
+:root:not([data-theme="dark"]) .toggle-btn,
+:root[data-theme="light"] .toggle-btn {
+  background: rgb(255 253 248 / 82%);
+  box-shadow: 0 2px 5px rgb(83 56 34 / 5%);
+}
+
+:root:not([data-theme="dark"]) .hint-empty,
+:root[data-theme="light"] .hint-empty {
+  border-color: #c58b65 !important;
+  background: linear-gradient(145deg, rgb(255 253 248 / 94%), rgb(250 238 220 / 76%)) !important;
+  box-shadow: 0 10px 22px rgb(83 56 34 / 7%) !important;
+}
+
+:root:not([data-theme="dark"]) .hint-empty-icon,
+:root[data-theme="light"] .hint-empty-icon {
+  color: #9d765d;
+}
+
+:root:not([data-theme="dark"]) .technique-ref,
+:root[data-theme="light"] .technique-ref,
+:root:not([data-theme="dark"]) .hint-panel,
+:root[data-theme="light"] .hint-panel {
+  box-shadow: none;
+}
+
+:root:not([data-theme="dark"]) .technique-list .ref-item,
+:root[data-theme="light"] .technique-list .ref-item {
+  padding-block: 17px;
+}
+
+:root:not([data-theme="dark"]) .ref-name,
+:root[data-theme="light"] .ref-name {
+  font-size: 0.88rem;
+  letter-spacing: -0.01em;
+}
+
+:root:not([data-theme="dark"]) .ref-desc,
+:root[data-theme="light"] .ref-desc {
+  color: #6a5344;
+  font-size: 0.76rem;
+}
+
+:root:not([data-theme="dark"]) .technique-example-trigger,
+:root[data-theme="light"] .technique-example-trigger {
+  padding: 4px 8px;
+  color: #173b68;
+  border: 1px solid rgb(23 59 104 / 18%);
+  border-radius: 999px;
+  background: rgb(255 253 248 / 72%);
+  box-shadow: 0 1px 2px rgb(14 33 63 / 4%);
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+:root:not([data-theme="dark"]) .technique-example-trigger:hover,
+:root[data-theme="light"] .technique-example-trigger:hover {
+  color: #fffaf2;
+  border-color: #173b68;
+  background: #173b68;
+  box-shadow: 0 5px 10px rgb(14 33 63 / 16%);
+}
+
+:root:not([data-theme="dark"]) .sudohint-image-select,
+:root[data-theme="light"] .sudohint-image-select {
+  padding: 5px 9px;
+  border: 1px solid rgb(23 59 104 / 16%);
+  border-radius: 999px;
+  background: rgb(255 253 248 / 74%);
+  box-shadow: 0 1px 2px rgb(14 33 63 / 4%);
+  text-decoration: none;
+}
+
+:root:not([data-theme="dark"]) .sudohint-image-select:hover,
+:root[data-theme="light"] .sudohint-image-select:hover {
+  color: #fffaf2;
+  border-color: #173b68;
+  background: #173b68;
+}
+
+:root:not([data-theme="dark"]) .sudohint-example-dialog,
+:root[data-theme="light"] .sudohint-example-dialog {
+  border: 1px solid rgb(188 135 100 / 70%);
+  box-shadow: 0 22px 54px rgb(14 33 63 / 22%), 0 2px 8px rgb(83 56 34 / 12%);
+}
+
+:root:not([data-theme="dark"]) button:focus-visible,
+:root[data-theme="light"] button:focus-visible,
+:root:not([data-theme="dark"]) input:focus-visible,
+:root[data-theme="light"] input:focus-visible,
+:root:not([data-theme="dark"]) textarea:focus-visible,
+:root[data-theme="light"] textarea:focus-visible {
+  outline: 3px solid rgb(216 144 93 / 42%);
+  outline-offset: 2px;
 }

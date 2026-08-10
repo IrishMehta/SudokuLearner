@@ -1420,7 +1420,7 @@ function ad(){
     length:9
   }, ()=>Array.from({
     length:9
-  }, ()=>new Set))), [C, L]=xe.useState(null), [R, V]=xe.useState(null), [Z, K]=xe.useState(!1), [F, te]=xe.useState("medium"), [se, ae]=xe.useState(!1), [re, he]=xe.useState([]), [fe, Ne]=xe.useState(!1), [_e, mt]=xe.useState(!0), [$e, vt]=xe.useState("idle"), [Be, Oe]=xe.useState(0), Ve=xe.useRef(null), Ze=xe.useCallback(()=>{
+  }, ()=>new Set))), [C, L]=xe.useState(null), [R, V]=xe.useState(null), [invalidMove, setInvalidMove]=xe.useState(null), [Z, K]=xe.useState(!1), [F, te]=xe.useState("medium"), [se, ae]=xe.useState(!1), [re, he]=xe.useState([]), [fe, Ne]=xe.useState(!1), [_e, mt]=xe.useState(!0), [$e, vt]=xe.useState("idle"), [Be, Oe]=xe.useState(0), Ve=xe.useRef(null), Ze=xe.useCallback(()=>{
     ae(!0), L(null), he([]), Oe(0), V(null), setTimeout(()=>{
       const{
         puzzle:$, solution:M
@@ -1449,6 +1449,17 @@ function ad(){
     Ie(u, x)
   }, [u, x, $e, Ie]), D=xe.useCallback(($, M, Y)=>{
     if(f[$][M]!==null)return;
+    if(Y!==null){
+      const ee=In(u);
+      ee[$][M]=null;
+      if(!Hl(ee, $, M, Y)){
+        const le=Date.now();
+        setInvalidMove({row:$, col:M, id:le});
+        typeof navigator.vibrate==="function"&&navigator.vibrate(70);
+        window.setTimeout(()=>setInvalidMove(we=>we&&we.id===le?null:we), 420);
+        return
+      }
+    }
     const B=In(u);
     if(B[$][M]=Y, w(B), Te(B), L(null), Hf(B)){
       let ee=!0;
@@ -1662,7 +1673,7 @@ function ad(){
             className:"sudoku-grid", children:u.map(($, M)=>$.map((Y, B)=>{
               const ee=`${M},${B}`, le=ud(u, f, M, B), we=R?.[0]===M&&R?.[1]===B, Wn=_e&&Q.has(ee), pn=_e&&I.has(ee)&&!Q.has(ee), Un=_e&&d.has(ee)&&!Q.has(ee), Pr=!C&&_e&&J.has(ee)&&!we, $r=!C&&_e&&b.has(ee)&&!we, Bn=Math.floor(M/3), zr=Math.floor(B/3), An=(Bn+zr)%2===0, Ct=x[M][B], Lt=_.get(ee);
               return g.jsx("div", {
-                className:["sudoku-cell", `state-${le}`, An?"box-even":"box-odd", we?"selected":"", Wn?"hint-target":"", pn?"hint-highlight":"", Un?"hint-elim":"", Pr?"sel-highlight":"", $r?"same-digit":"", `cell-${M}-${B}`].filter(Boolean).join(" "), onClick:()=>V([M, B]), "data-testid":`cell-${M}-${B}`, children:Y!==null?g.jsx("span", {
+              className:["sudoku-cell", `state-${le}`, An?"box-even":"box-odd", we?"selected":"", Wn?"hint-target":"", pn?"hint-highlight":"", Un?"hint-elim":"", Pr?"sel-highlight":"", $r?"same-digit":"", invalidMove?.row===M&&invalidMove?.col===B?"invalid-move":"", `cell-${M}-${B}`].filter(Boolean).join(" "), onClick:()=>V([M, B]), "data-testid":`cell-${M}-${B}`, children:Y!==null?g.jsx("span", {
                   className:"cell-value", children:Y
                 }):Z&&Ct.size>0?g.jsx("div", {
                   className:"candidates-grid", children:[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gt=>g.jsx("span", {
