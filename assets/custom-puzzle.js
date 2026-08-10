@@ -778,15 +778,20 @@
     if (!state || !steps) return null;
     var pattern = state.h.length ? state.h : state.t;
     var digit = exampleFocusDigit(state);
+    var hiddenSubset = name === "Hidden Pair" || name === "Hidden Triple" || name === "Hidden Quad";
+    var keptCandidates = hiddenSubset ? hiddenSubsetCandidates(state) : [];
     return steps.map(function (step, index) {
       var showEliminations = index === steps.length - 1;
+      var note = step.note.replace(/\{digit\}/g, digit);
+      if (hiddenSubset) note += index === 0 ? " The blue-underlined pencil marks are the hidden digits to keep." : " Keep the blue-underlined pencil marks; the red struck marks are the extra candidates to remove.";
       return {
         title: step.title,
-        note: step.note.replace(/\{digit\}/g, digit),
+        note: note,
         target: [],
         cause: pattern,
         elimination: showEliminations ? state.e.map(function (cell) { return [cell[0], cell[1]]; }) : [],
         removed: showEliminations ? state.e : [],
+        focus: keptCandidates,
         labels: {},
         puzzle: state.p
       };
@@ -799,12 +804,33 @@
     }).map(function (cell) { return String(cell[2]); });
   }
 
-  function examplePencilMarks(candidates, removed) {
+  function hiddenSubsetCandidates(state) {
+    var kept = [];
+    state.t.forEach(function (cell) {
+      var row = cell[0];
+      var col = cell[1];
+      var removed = (state.e || []).filter(function (entry) {
+        return entry[0] === row && entry[1] === col && entry.length > 2;
+      }).map(function (entry) { return String(entry[2]); });
+      exampleCandidates(state.p, row, col).split("").forEach(function (digit) {
+        if (removed.indexOf(digit) === -1) kept.push([row, col, digit]);
+      });
+    });
+    return kept;
+  }
+
+  function focusedExampleCandidates(frame, row, col) {
+    return (frame.focus || []).filter(function (cell) {
+      return cell[0] === row && cell[1] === col && cell.length > 2;
+    }).map(function (cell) { return String(cell[2]); });
+  }
+
+  function examplePencilMarks(candidates, removed, focused) {
     var marks = [];
     for (var digit = 1; digit <= 9; digit += 1) {
       var value = String(digit);
       var present = candidates.indexOf(value) !== -1;
-      marks.push('<span class="sudohint-example-pencil' + (removed.indexOf(value) !== -1 ? ' is-removed' : '') + '">' + (present ? value : '') + '</span>');
+      marks.push('<span class="sudohint-example-pencil' + (removed.indexOf(value) !== -1 ? ' is-removed' : '') + (focused.indexOf(value) !== -1 ? ' is-focus' : '') + '">' + (present ? value : '') + '</span>');
     }
     return '<span class="sudohint-example-pencil-grid" aria-label="Candidates ' + escapeExampleText(candidates) + '">' + marks.join("") + '</span>';
   }
@@ -820,8 +846,9 @@
         var given = value !== "0";
         var candidates = frame.puzzle && !given ? exampleCandidates(frame.puzzle, row, col) : "";
         var removed = removedExampleCandidates(frame, row, col);
+        var focused = focusedExampleCandidates(frame, row, col);
         var context = !label && !mark && !frame.puzzle;
-        var candidateMarkup = candidates ? examplePencilMarks(candidates, removed) : "";
+        var candidateMarkup = candidates ? examplePencilMarks(candidates, removed, focused) : "";
         var content = label ? '<span class="sudohint-example-label">' + escapeExampleText(label) + '</span>' :
           (given ? '<span class="sudohint-example-given">' + value + '</span>' :
             (candidates ? candidateMarkup :
@@ -886,7 +913,9 @@
       frames.innerHTML = (verifiedFrames || (verifiedFrame ? [verifiedFrame] : example.frames)).map(renderExampleFrame).join("");
       legend.innerHTML = name === "Simple Coloring"
         ? '<span><i class="given"></i> Puzzle given</span><span><i class="color-a"></i> Color A</span><span><i class="color-b"></i> Color B</span><span><i class="elimination"></i> Candidate removed</span>'
-        : '<span><i class="given"></i> Puzzle given</span><span><i class="target"></i> Forced result</span><span><i class="cause"></i> Pattern cells</span><span><i class="elimination"></i> Candidate removed</span>';
+        : (name === "Hidden Pair" || name === "Hidden Triple" || name === "Hidden Quad")
+          ? '<span><i class="given"></i> Puzzle given</span><span><i class="focus"></i> Digits to keep</span><span><i class="cause"></i> Pattern cells</span><span><i class="elimination"></i> Candidate removed</span>'
+          : '<span><i class="given"></i> Puzzle given</span><span><i class="target"></i> Forced result</span><span><i class="cause"></i> Pattern cells</span><span><i class="elimination"></i> Candidate removed</span>';
       modal.currentExample = name;
       modal.currentVariant = selectedVariant;
       dialog.scrollTop = 0;

@@ -734,6 +734,15 @@ body {
   box-shadow: 0 2px 5px rgb(83 56 34 / 5%);
 }
 
+/* The light hint control has a linen background, so it needs ink rather than
+   the inherited white label used by the old primary-button treatment. */
+:root:not([data-theme="dark"]) .btn-hint:not(:disabled),
+:root:not([data-theme="dark"]) .btn-hint:not(:disabled):hover,
+:root[data-theme="light"] .btn-hint:not(:disabled),
+:root[data-theme="light"] .btn-hint:not(:disabled):hover {
+  color: #0e213f !important;
+}
+
 :root:not([data-theme="dark"]) .hint-empty,
 :root[data-theme="light"] .hint-empty {
   border-color: #c58b65 !important;
@@ -822,4 +831,115 @@ body {
 :root[data-theme="light"] textarea:focus-visible {
   outline: 3px solid rgb(216 144 93 / 42%);
   outline-offset: 2px;
+}
+
+/* Hidden subsets are about particular pencil marks, not the whole cell. Keep
+   the surviving candidates visibly distinct from the red struck candidates. */
+.sudohint-example-pencil.is-focus {
+  position: relative;
+  z-index: 1;
+  color: #fffaf2;
+  background: #1d5b98;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgb(255 250 242 / 92%), 0 1px 2px rgb(14 33 63 / 28%);
+  font-weight: 900;
+}
+
+:root[data-theme="dark"] .sudohint-example-pencil.is-focus {
+  color: #fffaf2;
+  background: #3979bb;
+  box-shadow: 0 0 0 1px #162332, 0 1px 2px rgb(0 0 0 / 35%);
+}
+
+.sudohint-example-legend i.focus {
+  color: #1d5b98;
+  background: #1d5b98;
+}
+
+:root[data-theme="dark"] .sudohint-example-legend i.focus {
+  color: #3979bb;
+  background: #3979bb;
+}
+
+/* Elapsed time sits lightly between puzzle controls and gameplay actions. */
+.puzzle-timer {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-divider);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  box-shadow: 0 2px 5px rgb(83 56 34 / 6%);
+  font-size: .75rem;
+  font-weight: 650;
+}
+
+.puzzle-timer svg {
+  color: var(--color-orange);
+}
+
+.puzzle-timer strong {
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .045em;
+}
+
+:root[data-theme="dark"] .puzzle-timer {
+  border-color: var(--color-border);
+  background: var(--color-surface-offset);
+  box-shadow: none;
+}
+
+/* Handwritten notes stay separate from the app's calculated candidate display. */
+.candidate.manual-candidate {
+  color: var(--color-primary);
+  font-weight: 850;
+}
+
+:root[data-theme="dark"] .candidate.manual-candidate {
+  color: #b9dcff;
+}
+
+/* Compact state indicators make the three board-display controls readable at
+   a glance without turning the toolbar into a row of large switches. */
+.pencil-toggle,
+.manual-pencil-toggle,
+.highlight-toggle {
+  position: relative;
+  padding-right: 24px;
+}
+
+.pencil-toggle::after,
+.manual-pencil-toggle::after,
+.highlight-toggle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--color-text-faint);
+  border-radius: 50%;
+  background: transparent;
+  transform: translateY(-50%);
+}
+
+.pencil-toggle.active,
+.manual-pencil-toggle.active,
+.highlight-toggle.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-highlight);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.pencil-toggle.active::after,
+.manual-pencil-toggle.active::after,
+.highlight-toggle.active::after {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 16%, transparent);
 }

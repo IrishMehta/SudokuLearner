@@ -1420,19 +1420,70 @@ function ad(){
     length:9
   }, ()=>Array.from({
     length:9
-  }, ()=>new Set))), [C, L]=xe.useState(null), [R, V]=xe.useState(null), [invalidMove, setInvalidMove]=xe.useState(null), [Z, K]=xe.useState(!1), [F, te]=xe.useState("medium"), [se, ae]=xe.useState(!1), [re, he]=xe.useState([]), [fe, Ne]=xe.useState(!1), [_e, mt]=xe.useState(!0), [$e, vt]=xe.useState("idle"), [Be, Oe]=xe.useState(0), Ve=xe.useRef(null), Ze=xe.useCallback(()=>{
+  }, ()=>new Set))), [C, L]=xe.useState(null), [R, V]=xe.useState(null), [invalidMove, setInvalidMove]=xe.useState(null), [Z, K]=xe.useState(!1), [manualPencilMode, setManualPencilMode]=xe.useState(!1), [manualNotes, setManualNotes]=xe.useState(()=>Array.from({
+    length:9
+  }, ()=>Array.from({
+    length:9
+  }, ()=>new Set))), [manualRemoved, setManualRemoved]=xe.useState(()=>Array.from({
+    length:9
+  }, ()=>Array.from({
+    length:9
+  }, ()=>new Set))), [F, te]=xe.useState("medium"), [se, ae]=xe.useState(!1), [re, he]=xe.useState([]), [fe, Ne]=xe.useState(!1), [_e, mt]=xe.useState(!0), [$e, vt]=xe.useState("idle"), [Be, Oe]=xe.useState(0), [qe, Ge]=xe.useState(null), [We, Xe]=xe.useState(0), Ve=xe.useRef(null), Ze=xe.useCallback(()=>{
     ae(!0), L(null), he([]), Oe(0), V(null), setTimeout(()=>{
       const{
         puzzle:$, solution:M
       }
       =Xf(F);
-      w(In($)), m(In($)), S(M), E(Oa($)), vt("playing"), ae(!1)
+      w(In($)), m(In($)), S(M), E(Oa($)), setManualNotes(Array.from({
+        length:9
+      }, ()=>Array.from({
+        length:9
+      }, ()=>new Set))), setManualRemoved(Array.from({
+        length:9
+      }, ()=>Array.from({
+        length:9
+      }, ()=>new Set))), setManualPencilMode(!1), K(!1), vt("playing"), Ge(Date.now()), Xe(0), ae(!1)
     }, 50)
   }, [F]), Te=xe.useCallback($=>{
     E(Oa($))
-  }, []), Re=xe.useCallback($=>{
+  }, []), toggleManualPencil=xe.useCallback(($, M, Y)=>{
+    if(f[$][M]!==null)return;
+    if(Z){
+      if(!x[$][M].has(Y))return;
+      setManualRemoved(B=>{
+        const ee=B.map(le=>le.map(we=>new Set(we)));
+        return ee[$][M].has(Y)?ee[$][M].delete(Y):ee[$][M].add(Y), ee
+      });
+      return
+    }
+    setManualNotes(B=>{
+      const ee=B.map(le=>le.map(we=>new Set(we)));
+      return ee[$][M].has(Y)?ee[$][M].delete(Y):ee[$][M].add(Y), ee
+    })
+  }, [f, Z, x]), clearManualPencil=xe.useCallback(($, M)=>{
+    if(f[$][M]!==null)return;
+    if(Z){
+      setManualRemoved(Y=>{
+        const B=Y.map(ee=>ee.map(le=>new Set(le)));
+        return B[$][M]=new Set, B
+      });
+      return
+    }
+    setManualNotes(Y=>{
+      const B=Y.map(ee=>ee.map(le=>new Set(le)));
+      return B[$][M]=new Set, B
+    })
+  }, [f, Z]), Re=xe.useCallback($=>{
     const M=In($), Y=vd(M), B=Oa(M), ee=qf(M, B);
-    return w(M), m(In(M)), S(Y), E(B), L(ee), V(null), he(ee&&!ee.unsupported?[ee]:[]), Oe(ee&&!ee.unsupported?1:0), vt("playing"), ae(!1), ee&&setTimeout(()=>{
+    return w(M), m(In(M)), S(Y), E(B), setManualNotes(Array.from({
+      length:9
+    }, ()=>Array.from({
+      length:9
+    }, ()=>new Set))), setManualRemoved(Array.from({
+      length:9
+    }, ()=>Array.from({
+      length:9
+    }, ()=>new Set))), setManualPencilMode(!1), K(!1), L(ee), V(null), he(ee&&!ee.unsupported?[ee]:[]), Oe(ee&&!ee.unsupported?1:0), vt("playing"), Ge(Date.now()), Xe(0), ae(!1), ee&&setTimeout(()=>{
       Ve.current?.scrollIntoView({
         behavior:"smooth", block:"nearest"
       })
@@ -1461,7 +1512,13 @@ function ad(){
       }
     }
     const B=In(u);
-    if(B[$][M]=Y, w(B), Te(B), L(null), Hf(B)){
+    if(setManualNotes(ee=>{
+      const le=ee.map(we=>we.map(gt=>new Set(gt)));
+      return le[$][M]=new Set, le
+    }), setManualRemoved(ee=>{
+      const le=ee.map(we=>we.map(gt=>new Set(gt)));
+      return le[$][M]=new Set, le
+    }), B[$][M]=Y, w(B), Te(B), L(null), Hf(B)){
       let ee=!0;
       if(N){
         for(let le=0;
@@ -1485,7 +1542,13 @@ function ad(){
       if(f[Y][B]!==null)return;
       $=In(u), $[Y][B]=C.value, M[Y][B]=new Set;
       for(const[ee, le]of Ul(Y, B))M[ee][le].delete(C.value);
-      if(w($), Hf($)){
+      if(w($), setManualNotes(ee=>{
+        const le=ee.map(we=>we.map(gt=>new Set(gt)));
+        return le[Y][B]=new Set, le
+      }), setManualRemoved(ee=>{
+        const le=ee.map(we=>we.map(gt=>new Set(gt)));
+        return le[Y][B]=new Set, le
+      }), Hf($)){
         let ee=!0;
         if(N)for(let le=0;
         le<9;
@@ -1516,13 +1579,20 @@ function ad(){
 
   }, [Re, u]);
   xe.useEffect(()=>{
+    if($e!=="playing"||qe===null)return;
+    const $=()=>Xe(Math.floor((Date.now()-qe)/1e3));
+    $();
+    const M=window.setInterval($, 1e3);
+    return()=>window.clearInterval(M)
+  }, [$e, qe]);
+  xe.useEffect(()=>{
     const $=M=>{
       if(!R)return;
       const[Y, B]=R;
-      f[Y][B]===null&&(M.key>="1"&&M.key<="9"?D(Y, B, parseInt(M.key)):M.key==="Backspace"||M.key==="Delete"||M.key==="0"?D(Y, B, null):M.key==="ArrowUp"&&Y>0?V([Y-1, B]):M.key==="ArrowDown"&&Y<8?V([Y+1, B]):M.key==="ArrowLeft"&&B>0?V([Y, B-1]):M.key==="ArrowRight"&&B<8&&V([Y, B+1]))
+      f[Y][B]===null&&(M.key>="1"&&M.key<="9"?manualPencilMode?toggleManualPencil(Y, B, parseInt(M.key)):D(Y, B, parseInt(M.key)):M.key==="Backspace"||M.key==="Delete"||M.key==="0"?manualPencilMode?clearManualPencil(Y, B):D(Y, B, null):M.key==="ArrowUp"&&Y>0?V([Y-1, B]):M.key==="ArrowDown"&&Y<8?V([Y+1, B]):M.key==="ArrowLeft"&&B>0?V([Y, B-1]):M.key==="ArrowRight"&&B<8&&V([Y, B+1]))
     };
     return window.addEventListener("keydown", $), ()=>window.removeEventListener("keydown", $)
-  }, [R, f, D]);
+  }, [R, f, D, manualPencilMode, toggleManualPencil, clearManualPencil]);
   const Q=new Set((C?.targetCells??[]).map(([$, M])=>`${$},${M}`)), I=new Set((C?.highlightCells??[]).map(([$, M])=>`${$},${M}`)), d=new Set((C?.eliminationCells??[]).map(({
     row:$, col:M
   })=>`${$},${M}`)), _=new Map;
@@ -1551,6 +1621,7 @@ function ad(){
     we<9;
     we++)u[le][we]===Y&&b.add(`${le},${we}`)
   }
+  const timerText=`${String(Math.floor(We/60)).padStart(2,"0")}:${String(We%60).padStart(2,"0")}`;
   return u.every($=>$.every(M=>M===null)), g.jsxs("div", {
     className:"app-root", children:[g.jsxs("header", {
       className:"app-header", children:[g.jsxs("div", {
@@ -1612,6 +1683,18 @@ function ad(){
               }), "New Puzzle"]
             })
           })]
+        }), $e!=="idle"&&g.jsxs("div", {
+          className:"puzzle-timer", "data-testid":"puzzle-timer", "aria-label":"Elapsed time", children:[g.jsxs("svg", {
+            width:"14", height:"14", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2", children:[g.jsx("circle", {
+              cx:"12", cy:"12", r:"9"
+            }), g.jsx("path", {
+              d:"M12 7v5l3 2"
+            })]
+          }), g.jsx("span", {
+            children:"Time"
+          }), g.jsx("strong", {
+            children:timerText
+          })]
         }), $e==="playing"&&g.jsxs("div", {
           className:"hint-controls", children:[g.jsxs("button", {
             className:"btn btn-hint", onClick:me, "data-testid":"hint-btn", children:[g.jsxs("svg", {
@@ -1626,15 +1709,38 @@ function ad(){
               className:"hint-badge", children:Be
             })]
           }), g.jsxs("button", {
-            className:`toggle-btn ${Z?"active":""}`, onClick:()=>K($=>!$), "data-testid":"toggle-candidates", children:[g.jsxs("svg", {
+            className:`toggle-btn pencil-toggle ${Z?"active":""}`, onClick:()=>{
+              if(!Z){
+                setManualNotes(Array.from({
+                  length:9
+                }, ()=>Array.from({
+                  length:9
+                }, ()=>new Set))), setManualRemoved(Array.from({
+                  length:9
+                }, ()=>Array.from({
+                  length:9
+                }, ()=>new Set)))
+              }
+              K($=>!$)
+            }, "aria-pressed":Z, "data-testid":"toggle-candidates", children:[g.jsxs("svg", {
               width:"13", height:"13", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2", children:[g.jsx("circle", {
                 cx:"12", cy:"12", r:"3"
               }), g.jsx("path", {
                 d:"M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"
               })]
-            }), "Pencil Marks"]
+            }), "Auto pencil"]
           }), g.jsxs("button", {
-            className:`toggle-btn ${_e?"active":""}`, onClick:()=>mt($=>!$), children:[g.jsxs("svg", {
+            className:`toggle-btn manual-pencil-toggle ${manualPencilMode?"active":""}`, onClick:()=>{
+              setManualPencilMode($=>!$)
+            }, "aria-pressed":manualPencilMode, title:"Write or erase your own pencil marks", "data-testid":"manual-pencil-toggle", children:[g.jsxs("svg", {
+              width:"13", height:"13", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2", children:[g.jsx("path", {
+                d:"M12 20h9"
+              }), g.jsx("path", {
+                d:"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+              })]
+            }), "Manual pencil"]
+          }), g.jsxs("button", {
+            className:`toggle-btn highlight-toggle ${_e?"active":""}`, onClick:()=>mt($=>!$), "aria-pressed":_e, children:[g.jsxs("svg", {
               width:"13", height:"13", viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2", children:[g.jsx("path", {
                 d:"M12 20h9"
               }), g.jsx("path", {
@@ -1671,13 +1777,13 @@ function ad(){
             })
           }):g.jsx("div", {
             className:"sudoku-grid", children:u.map(($, M)=>$.map((Y, B)=>{
-              const ee=`${M},${B}`, le=ud(u, f, M, B), we=R?.[0]===M&&R?.[1]===B, Wn=_e&&Q.has(ee), pn=_e&&I.has(ee)&&!Q.has(ee), Un=_e&&d.has(ee)&&!Q.has(ee), Pr=!C&&_e&&J.has(ee)&&!we, $r=!C&&_e&&b.has(ee)&&!we, Bn=Math.floor(M/3), zr=Math.floor(B/3), An=(Bn+zr)%2===0, Ct=x[M][B], Lt=_.get(ee);
+              const ee=`${M},${B}`, le=ud(u, f, M, B), we=R?.[0]===M&&R?.[1]===B, Wn=_e&&Q.has(ee), pn=_e&&I.has(ee)&&!Q.has(ee), Un=_e&&d.has(ee)&&!Q.has(ee), Pr=!C&&_e&&J.has(ee)&&!we, $r=!C&&_e&&b.has(ee)&&!we, Bn=Math.floor(M/3), zr=Math.floor(B/3), An=(Bn+zr)%2===0, Ct=x[M][B], Mn=manualNotes[M][B], Mr=manualRemoved[M][B], Sn=Z?new Set([...Ct].filter(gt=>!Mr.has(gt))):Mn, Gn=Mn.size>0, Lt=_.get(ee);
               return g.jsx("div", {
               className:["sudoku-cell", `state-${le}`, An?"box-even":"box-odd", we?"selected":"", Wn?"hint-target":"", pn?"hint-highlight":"", Un?"hint-elim":"", Pr?"sel-highlight":"", $r?"same-digit":"", invalidMove?.row===M&&invalidMove?.col===B?"invalid-move":"", `cell-${M}-${B}`].filter(Boolean).join(" "), onClick:()=>V([M, B]), "data-testid":`cell-${M}-${B}`, children:Y!==null?g.jsx("span", {
                   className:"cell-value", children:Y
-                }):Z&&Ct.size>0?g.jsx("div", {
+                }):(Z?Sn.size>0:Gn)?g.jsx("div", {
                   className:"candidates-grid", children:[1, 2, 3, 4, 5, 6, 7, 8, 9].map(gt=>g.jsx("span", {
-                    className:["candidate", Ct.has(gt)?"visible":"", Lt?.has(gt)?"elim-candidate":"", C?.value===gt&&Wn?"hint-candidate":""].filter(Boolean).join(" "), children:Ct.has(gt)?gt:""
+                    className:["candidate", Sn.has(gt)?"visible":"", !Z&&Mn.has(gt)?"manual-candidate":"", Lt?.has(gt)?"elim-candidate":"", C?.value===gt&&Wn?"hint-candidate":""].filter(Boolean).join(" "), children:Sn.has(gt)?gt:""
                   }, gt))
                 }):null
               }, ee)
@@ -1701,9 +1807,9 @@ function ad(){
           })]
         }), $e==="playing"&&R&&f[R[0]][R[1]]===null&&g.jsxs("div", {
           className:"numpad", children:[[1, 2, 3, 4, 5, 6, 7, 8, 9].map($=>g.jsx("button", {
-            className:"numpad-btn", onClick:()=>D(R[0], R[1], $), "data-testid":`numpad-${$}`, children:$
+            className:"numpad-btn", onClick:()=>manualPencilMode?toggleManualPencil(R[0], R[1], $):D(R[0], R[1], $), "data-testid":`numpad-${$}`, children:$
           }, $)), g.jsx("button", {
-            className:"numpad-btn numpad-clear", onClick:()=>D(R[0], R[1], null), "data-testid":"numpad-clear", children:"✕"
+            className:"numpad-btn numpad-clear", onClick:()=>manualPencilMode?clearManualPencil(R[0], R[1]):D(R[0], R[1], null), "data-testid":"numpad-clear", children:"✕"
           })]
         })]
       }), g.jsxs("div", {
