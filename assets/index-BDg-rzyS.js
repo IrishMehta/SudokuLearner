@@ -1953,24 +1953,32 @@ function ad(){
                 children:["Eliminate ", [...new Set(C.eliminationCells.map($=>$.digit))].join(", "), " from ", C.eliminationCells.length, " cell", C.eliminationCells.length>1?"s":""]
               })]
             })]
+          }), g.jsx("p", {
+            className:"sudohint-hint-key-title", children:"HOW TO READ THIS HINT"
           }), g.jsxs("div", {
-            className:"hint-legend", children:[C.targetCells.length>0&&g.jsxs("div", {
+            className:"hint-legend", children:[g.jsxs("div", {
+              className:"legend-item sudohint-given-key", children:[g.jsx("span", {
+                className:"legend-dot given-dot"
+              }), g.jsx("span", {
+                children:"Given number"
+              })]
+            }), C.targetCells.length>0&&g.jsxs("div", {
               className:"legend-item", children:[g.jsx("span", {
                 className:"legend-dot target-dot"
-              }), g.jsxs("span", {
-                children:["Target cell", C.targetCells.length>1?"s":""]
+              }), g.jsx("span", {
+                children:C.value!==void 0?"Place this digit":"Key pattern cells"
               })]
             }), C.highlightCells.length>0&&!C.targetCells.every(([$, M])=>C.highlightCells.some(([Y, B])=>Y===$&&B===M))&&g.jsxs("div", {
               className:"legend-item", children:[g.jsx("span", {
                 className:"legend-dot cause-dot"
               }), g.jsx("span", {
-                children:"Cause cells"
+                children:"Supporting cells"
               })]
             }), (C.eliminationCells?.length??0)>0&&g.jsxs("div", {
               className:"legend-item", children:[g.jsx("span", {
                 className:"legend-dot elim-dot"
               }), g.jsx("span", {
-                children:"Elimination cells"
+                children:"Remove this candidate"
               })]
             })]
           }), g.jsxs("div", {

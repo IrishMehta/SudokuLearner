@@ -1789,38 +1789,6 @@
     });
   }
 
-  function enhanceHintKey() {
-    var panel = document.querySelector(".hint-panel");
-    if (!panel) return;
-    var legend = panel.querySelector(".hint-legend");
-    if (!legend) return;
-
-    if (!panel.querySelector(".sudohint-hint-key-title")) {
-      var title = document.createElement("p");
-      title.className = "sudohint-hint-key-title";
-      title.textContent = "HOW TO READ THIS HINT";
-      legend.parentNode.insertBefore(title, legend);
-    }
-
-    if (!legend.querySelector(".given-dot")) {
-      var given = document.createElement("div");
-      given.className = "legend-item sudohint-given-key";
-      given.innerHTML = '<span class="legend-dot given-dot"></span><span>Given number</span>';
-      legend.insertBefore(given, legend.firstChild);
-    }
-
-    var isPlacement = Boolean(panel.querySelector(".hint-digit"));
-    legend.querySelectorAll(".legend-item").forEach(function (item) {
-      var label = item.querySelector("span:last-child");
-      if (!label) return;
-      var nextLabel = "";
-      if (item.querySelector(".target-dot")) nextLabel = isPlacement ? "Place this digit" : "Key pattern cells";
-      if (item.querySelector(".cause-dot")) nextLabel = "Supporting cells";
-      if (item.querySelector(".elim-dot")) nextLabel = "Remove this candidate";
-      if (nextLabel && label.textContent !== nextLabel) label.textContent = nextLabel;
-    });
-  }
-
   function copyCurrentGrid() {
     var getCurrentPuzzleString = window.SudoHint && window.SudoHint.getCurrentPuzzleString;
     var text = typeof getCurrentPuzzleString === "function" ? getCurrentPuzzleString() : "";
@@ -1868,11 +1836,9 @@
   function startCustomUi() {
     createImportUi();
 
-    enhanceHintKey();
     enhanceBoardSnapshot();
     if (window.MutationObserver) {
       new MutationObserver(function () {
-        enhanceHintKey();
         enhanceBoardSnapshot();
       }).observe(document.body, { childList: true, subtree: true });
     }

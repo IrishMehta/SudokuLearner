@@ -50,6 +50,13 @@ function mount(localStorage, now = 1000000) {
     document: { documentElement: { setAttribute() {} } }, Date: { now: () => clock },
     setTimeout: window.setTimeout });
   vm.runInContext(app, context);
+  vm.runInContext(`{
+    let seed = 123456789;
+    Math.random = () => {
+      seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
+      return (seed >>> 0) / 4294967296;
+    };
+  }`, context);
   function render() {
     let passes = 0;
     do {
@@ -68,6 +75,7 @@ function mount(localStorage, now = 1000000) {
   render();
   return { context, nodes, saved: () => JSON.parse(localStorage.getItem(key)),
     click(id) { const node = nodes().find(n => n['data-testid'] === id); assert.ok(node, id); node.onClick(); render(); },
+    applyNext() { const node = nodes().find(n => n.className === 'apply-next-btn'); assert.ok(node, 'Apply & Next'); node.onClick(); render(); },
     load(grid) { window.SudoHint.loadPuzzle(grid); render(); },
     flush() { while (timeouts.length) { timeouts.shift()(); render(); } },
     advance(seconds) { clock += seconds * 1000; for (const callback of intervals.values()) callback(); render(); },
@@ -102,6 +110,26 @@ test('a refresh restores imported clues, editable entries, notes, settings, and 
   refreshed.click('cell-0-2');
   refreshed.click('numpad-clear');
   assert.equal(refreshed.saved().grid[0][2], null, 'restored entries remain editable');
+});
+
+test('Apply & Next can render an entire generated puzzle without crashing', () => {
+  for (const difficulty of ['medium', 'hard', 'extreme']) {
+    for (let run = 0; run < 2; run++) {
+      const page = mount(storage());
+      page.click('diff-' + difficulty);
+      page.click('generate-btn');
+      page.flush();
+      page.click('hint-btn');
+      let applied = 0;
+      while (page.nodes().some(n => n.className === 'apply-next-btn')) {
+        assert.ok(applied++ < 200, 'hints should make progress');
+        page.applyNext();
+      }
+      assert.ok(applied > 6, 'exercise repeated hint application');
+      assert.ok(page.nodes().some(n => n['data-testid'] === 'sudoku-grid'));
+      page.unmount();
+    }
+  }
 });
 
 test('candidate eliminations and manual removal marks survive refresh', () => {
