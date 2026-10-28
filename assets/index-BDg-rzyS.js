@@ -447,6 +447,7 @@ function Qf(){
   return k(0), y
 }
 function Xf(y){
+  if(y==="extreme")return SudoHintExtremePuzzle();
   const k=Qf(), u=In(k), w=Aa(Array.from({
   length:81
   }, (N, S)=>[Math.floor(S/9), S%9])), f=y==="medium"?32:24;
@@ -460,6 +461,38 @@ function Xf(y){
     puzzle:u, solution:k
   }
 
+}
+function SudoHintExtremePuzzle(){
+  // Each seed has one solution, is solvable with the implemented hints, and
+  // needs advanced/expert techniques after singles and subsets run out.
+  const seeds=[
+    {
+      puzzle:"100870000080063007000100000000000005070040023300602010030000050005900000048001002",
+      solution:"123874596589263147467195238692317485871549623354682719736428951215936874948751362"
+    },
+    {
+      puzzle:"006100050490050008000684007000090300000070010009000060007000401020500000060000070",
+      solution:"876139254491752638235684197718296345642375819359418762587963421123547986964821573"
+    },
+    {
+      puzzle:"000000000081600502700300040000009807002000600407805000000070060004021000005900000",
+      solution:"546712938381694572729358146163249857852137694497865321918473265634521789275986413"
+    },
+    {
+      puzzle:"049007638000000004053000000006200081100050070830000009000070063000002400000095000",
+      solution:"249517638681923754753846192476239581192458376835761249528174963967382415314695827"
+    }
+  ];
+  const seed=seeds[Math.floor(Math.random()*seeds.length)];
+  const digits=Aa([1,2,3,4,5,6,7,8,9]);
+  const order=()=>Aa([0,1,2]).flatMap(band=>Aa([0,1,2]).map(row=>band*3+row));
+  const rows=order(), columns=order(), transpose=Math.random()<0.5;
+  // Sudoku symmetries preserve the solution and the logical challenge.
+  const transform=text=>rows.map(row=>columns.map(column=>{
+    const digit=Number(text[transpose?column*9+row:row*9+column]);
+    return digit?digits[digit-1]:null
+  }));
+  return {puzzle:transform(seed.puzzle), solution:transform(seed.solution)}
 }
 function qf(y, k){
   return Kf(y, k)||Yf(y, k)||Gf(y, k)||Zf(y, k)||SudoHintNakedQuad(y, k)||Jf(y, k)||SudoHintHiddenTriple(y, k)||SudoHintHiddenQuad(y, k)||bf(y, k)||ed(y, k)||td(y, k)||SudoHintFinnedXWing(y, k)||nd(y, k)||SudoHintJellyfish(y, k)||SudoHintSkyscraper(y, k)||SudoHintTwoStringKite(y, k)||SudoHintSimpleColoring(y, k)||SudoHintWWing(y, k)||rd(y, k)||SudoHintXYZWing(y, k)||SudoHintXYChain(y, k)||SudoHintUniqueRectangle(y, k)||ld(y, k)||SudoHintNoSupported(y, k)
@@ -1408,27 +1441,92 @@ const Oo={
 }, sd={
   basic:"Basic", intermediate:"Intermediate", advanced:"Advanced", expert:"Expert"
 };
+const SudoHintSessionKey="sudohint.session.v1";
+function SudoHintValidGrid(grid){
+  return Array.isArray(grid)&&grid.length===9&&grid.every(row=>
+    Array.isArray(row)&&row.length===9&&row.every(value=>
+      value===null||Number.isInteger(value)&&value>=1&&value<=9))
+}
+function SudoHintValidMarks(grid){
+  return Array.isArray(grid)&&grid.length===9&&grid.every(row=>
+    Array.isArray(row)&&row.length===9&&row.every(values=>
+      Array.isArray(values)&&values.length<=9&&new Set(values).size===values.length&&
+      values.every(value=>Number.isInteger(value)&&value>=1&&value<=9)))
+}
+function SudoHintRestoreMarks(grid){
+  return Array.from({length:9}, (_, row)=>Array.from({length:9}, (_, column)=>
+    new Set(grid?grid[row][column]:[])))
+}
+function SudoHintReadSession(){
+  try{
+    const saved=JSON.parse(window.localStorage.getItem(SudoHintSessionKey));
+    if(!saved||saved.version!==1||!["playing","complete"].includes(saved.status)||
+      !SudoHintValidGrid(saved.grid)||!SudoHintValidGrid(saved.givens)||
+      saved.solution!==null&&!SudoHintValidGrid(saved.solution)||
+      !SudoHintValidMarks(saved.candidates)||!SudoHintValidMarks(saved.notes)||
+      !SudoHintValidMarks(saved.removed))return null;
+    const legal=Oa(saved.grid);
+    for(let row=0;row<9;row++)for(let column=0;column<9;column++){
+      const value=saved.grid[row][column], given=saved.givens[row][column];
+      if(given!==null&&(value!==given||saved.solution&&saved.solution[row][column]!==given))return null;
+      if(value!==null){
+        const copy=In(saved.grid);
+        copy[row][column]=null;
+        if(!Hl(copy,row,column,value))return null
+      }
+      if(saved.candidates[row][column].some(digit=>!legal[row][column].has(digit)))return null;
+      if(saved.solution){
+        const digit=saved.solution[row][column], copy=In(saved.solution);
+        copy[row][column]=null;
+        if(digit===null||!Hl(copy,row,column,digit))return null
+      }
+    }
+    if(saved.status==="complete"&&(!Hf(saved.grid)||saved.solution&&
+      saved.grid.some((row,r)=>row.some((digit,c)=>digit!==saved.solution[r][c]))))return null;
+    saved.difficulty=["medium","hard","extreme"].includes(saved.difficulty)?saved.difficulty:"medium";
+    saved.elapsedSeconds=Number.isSafeInteger(saved.elapsedSeconds)&&saved.elapsedSeconds>=0?saved.elapsedSeconds:0;
+    saved.hintCount=Number.isSafeInteger(saved.hintCount)&&saved.hintCount>=0?saved.hintCount:0;
+    saved.selected=Array.isArray(saved.selected)&&saved.selected.length===2&&
+      saved.selected.every(index=>Number.isInteger(index)&&index>=0&&index<9)?saved.selected:null;
+    return saved
+  }catch{
+    // Storage may be disabled, full, or contain an older/corrupt save.
+    return null
+  }
+}
+function SudoHintSaveSession(session){
+  if(!["playing","complete"].includes(session.status))return;
+  try{
+    const serialize=grid=>grid.map(row=>row.map(values=>Array.from(values)));
+    window.localStorage.setItem(SudoHintSessionKey,JSON.stringify({
+      ...session, version:1, candidates:serialize(session.candidates),
+      notes:serialize(session.notes), removed:serialize(session.removed)
+    }))
+  }catch{
+    // A storage failure must not interrupt the current puzzle.
+  }
+}
 function ad(){
+  const [savedSession]=xe.useState(SudoHintReadSession);
   const{
     theme:y, toggle:k
   }
-  =od(), [u, w]=xe.useState(()=>Array.from({
+  =od(), [u, w]=xe.useState(()=>savedSession?savedSession.grid:Array.from({
     length:9
-  }, ()=>Array(9).fill(null))), [f, m]=xe.useState(()=>Array.from({
+  }, ()=>Array(9).fill(null))), [f, m]=xe.useState(()=>savedSession?savedSession.givens:Array.from({
     length:9
-  }, ()=>Array(9).fill(null))), [N, S]=xe.useState(null), [x, E]=xe.useState(()=>Array.from({
-    length:9
-  }, ()=>Array.from({
-    length:9
-  }, ()=>new Set))), [C, L]=xe.useState(null), [R, V]=xe.useState(null), [invalidMove, setInvalidMove]=xe.useState(null), [Z, K]=xe.useState(!1), [manualPencilMode, setManualPencilMode]=xe.useState(!1), [manualNotes, setManualNotes]=xe.useState(()=>Array.from({
-    length:9
-  }, ()=>Array.from({
-    length:9
-  }, ()=>new Set))), [manualRemoved, setManualRemoved]=xe.useState(()=>Array.from({
-    length:9
-  }, ()=>Array.from({
-    length:9
-  }, ()=>new Set))), [F, te]=xe.useState("medium"), [se, ae]=xe.useState(!1), [re, he]=xe.useState([]), [fe, Ne]=xe.useState(!1), [_e, mt]=xe.useState(!0), [$e, vt]=xe.useState("idle"), [Be, Oe]=xe.useState(0), [qe, Ge]=xe.useState(null), [We, Xe]=xe.useState(0), Ve=xe.useRef(null), Ze=xe.useCallback(()=>{
+  }, ()=>Array(9).fill(null))), [N, S]=xe.useState(()=>savedSession?savedSession.solution:null),
+  [x, E]=xe.useState(()=>SudoHintRestoreMarks(savedSession&&savedSession.candidates)),
+  [C, L]=xe.useState(null), [R, V]=xe.useState(()=>savedSession?savedSession.selected:null),
+  [invalidMove, setInvalidMove]=xe.useState(null), [Z, K]=xe.useState(()=>savedSession?savedSession.showCandidates===true:!1),
+  [manualPencilMode, setManualPencilMode]=xe.useState(()=>savedSession?savedSession.manualPencilMode===true:!1),
+  [manualNotes, setManualNotes]=xe.useState(()=>SudoHintRestoreMarks(savedSession&&savedSession.notes)),
+  [manualRemoved, setManualRemoved]=xe.useState(()=>SudoHintRestoreMarks(savedSession&&savedSession.removed)),
+  [F, te]=xe.useState(()=>savedSession?savedSession.difficulty:"medium"), [se, ae]=xe.useState(!1),
+  [re, he]=xe.useState([]), [fe, Ne]=xe.useState(!1), [_e, mt]=xe.useState(()=>savedSession?savedSession.highlight!==false:!0),
+  [$e, vt]=xe.useState(()=>savedSession?savedSession.status:"idle"), [Be, Oe]=xe.useState(()=>savedSession?savedSession.hintCount:0),
+  [qe, Ge]=xe.useState(()=>savedSession?Date.now()-savedSession.elapsedSeconds*1000:null),
+  [We, Xe]=xe.useState(()=>savedSession?savedSession.elapsedSeconds:0), Ve=xe.useRef(null), Ze=xe.useCallback(()=>{
     ae(!0), L(null), he([]), Oe(0), V(null), setTimeout(()=>{
       const{
         puzzle:$, solution:M
@@ -1579,6 +1677,13 @@ function ad(){
 
   }, [Re, u]);
   xe.useEffect(()=>{
+    SudoHintSaveSession({
+      grid:u, givens:f, solution:N, candidates:x, notes:manualNotes, removed:manualRemoved,
+      difficulty:F, status:$e, selected:R, showCandidates:Z, manualPencilMode,
+      highlight:_e, elapsedSeconds:We, hintCount:Be
+    })
+  }, [u, f, N, x, manualNotes, manualRemoved, F, $e, R, Z, manualPencilMode, _e, We, Be]);
+  xe.useEffect(()=>{
     if($e!=="playing"||qe===null)return;
     const $=()=>Xe(Math.floor((Date.now()-qe)/1e3));
     $();
@@ -1667,8 +1772,8 @@ function ad(){
       className:"app-main", children:[g.jsxs("div", {
         className:"left-col", children:[g.jsxs("div", {
           className:"controls-bar", children:[g.jsx("div", {
-            className:"difficulty-selector", children:["medium", "hard"].map($=>g.jsx("button", {
-              className:`diff-btn ${F===$?"active":""}`, onClick:()=>te($), "data-testid":`diff-${$}`, children:$==="medium"?"Medium":"Hard"
+            className:"difficulty-selector", children:["medium", "hard", "extreme"].map($=>g.jsx("button", {
+              className:`diff-btn ${F===$?"active":""}`, onClick:()=>te($), "aria-pressed":F===$, "data-testid":`diff-${$}`, children:$==="medium"?"Medium":$==="hard"?"Hard":"Extreme"
             }, $))
           }), g.jsx("button", {
             className:"btn btn-primary generate-btn", onClick:Ze, disabled:se, "data-testid":"generate-btn", children:se?g.jsx("span", {

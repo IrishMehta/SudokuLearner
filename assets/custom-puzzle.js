@@ -1364,8 +1364,12 @@
       '  <textarea id="sudohint-import-text" class="sudohint-import-text" rows="3" spellcheck="false"></textarea>',
       '  <details class="sudohint-image-import">',
       '    <summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m0 0-4.5 4.5M12 3l4.5 4.5M5 14.5v4A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-4"/></svg><span>Add a screenshot of your grid</span></summary>',
-      '    <p>Choose a screenshot or a straight-on photo. Detection and reading happen only in your browser.</p>',
-      '    <label class="sudohint-image-select">Choose image<input class="sudohint-image-input" type="file" accept="image/*" capture="environment"></label>',
+      '    <p>Choose or paste a screenshot or a straight-on photo. Detection and reading happen only in your browser.</p>',
+      '    <div class="sudohint-image-actions">',
+      '      <label class="sudohint-image-select">Choose image<input class="sudohint-image-input" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.bmp,image/png,image/jpeg,image/webp,image/gif,image/bmp" capture="environment"></label>',
+      '      <button class="sudohint-image-select sudohint-image-paste" type="button">Paste from clipboard</button>',
+      '    </div>',
+      '    <p>Supports PNG, JPG/JPEG, WebP, GIF, and BMP. You can also press Ctrl+V (Cmd+V on Mac) anywhere in this dialog to paste an image.</p>',
       '    <div class="sudohint-image-preview" hidden><canvas class="sudohint-image-canvas"></canvas></div>',
       '    <div class="sudohint-straightened-preview" hidden>',
       '      <p><strong>Board straightened</strong> &middot; 81 cells ready for digit reading</p>',
@@ -1400,6 +1404,8 @@
     var clearButton = widget.querySelector(".sudohint-import-quiet");
     var loadButton = widget.querySelector(".sudohint-import-primary");
     var imageInput = widget.querySelector(".sudohint-image-input");
+    var imageImport = widget.querySelector(".sudohint-image-import");
+    var imagePasteButton = widget.querySelector(".sudohint-image-paste");
     var imagePreview = widget.querySelector(".sudohint-image-preview");
     var imageCanvas = widget.querySelector(".sudohint-image-canvas");
     var straightenedPreview = widget.querySelector(".sudohint-straightened-preview");
@@ -1529,10 +1535,58 @@
       });
     }
 
+    var supportedImageTypes = {
+      "image/png": ["png"],
+      "image/jpeg": ["jpg", "jpeg"],
+      "image/webp": ["webp"],
+      "image/gif": ["gif"],
+      "image/bmp": ["bmp"]
+    };
+    var supportedImageMessage = "Please choose or paste a supported image: PNG, JPG/JPEG, WebP, GIF, or BMP.";
+
+    function isSupportedImage(file) {
+      var type = (file.type || "").toLowerCase();
+      var extension = file.name && file.name.toLowerCase().match(/\.([^.]+)$/);
+      if (file.name && !extension) return false;
+      if (type && !Object.prototype.hasOwnProperty.call(supportedImageTypes, type)) return false;
+      if (extension) {
+        var extensions = type ? supportedImageTypes[type] : ["png", "jpg", "jpeg", "webp", "gif", "bmp"];
+        return extensions.indexOf(extension[1]) !== -1;
+      }
+      return Boolean(type);
+    }
+
+    async function pasteClipboardImage() {
+      imageImport.open = true;
+      if (!navigator.clipboard || typeof navigator.clipboard.read !== "function" || !window.isSecureContext) {
+        setImageStatus("Use Ctrl+V (Cmd+V on Mac) in this dialog to paste an image, or choose an image file.", true);
+        return;
+      }
+      imagePasteButton.disabled = true;
+      try {
+        var items = await navigator.clipboard.read();
+        for (var i = 0; i < items.length; i += 1) {
+          var type = items[i].types.find(function (type) {
+            return Object.prototype.hasOwnProperty.call(supportedImageTypes, type);
+          });
+          if (type) {
+            detectSelectedImage(await items[i].getType(type));
+            return;
+          }
+        }
+        setImageStatus(supportedImageMessage, true);
+      } catch (error) {
+        setImageStatus("Clipboard access was unavailable. Use Ctrl+V (Cmd+V on Mac) in this dialog, or choose an image file.", true);
+      } finally {
+        imagePasteButton.disabled = false;
+      }
+    }
+
     function detectSelectedImage(file) {
       if (!file) return;
-      if (!file.type || file.type.indexOf("image/") !== 0) {
-        setImageStatus("Please choose an image file.", true);
+      imageImport.open = true;
+      if (!isSupportedImage(file)) {
+        setImageStatus(supportedImageMessage, true);
         return;
       }
       setImageStatus("Detecting grid locally...", false);
@@ -1547,6 +1601,7 @@
       var image = new Image();
       image.onload = function () {
         URL.revokeObjectURL(objectUrl);
+        if (detectionId !== imageDetectionId) return;
         if (!window.SudokuGridDetector) {
           setImageStatus("The image detector did not load. Refresh the page and try again.", true);
           return;
@@ -1588,6 +1643,7 @@
       };
       image.onerror = function () {
         URL.revokeObjectURL(objectUrl);
+        if (detectionId !== imageDetectionId) return;
         setImageStatus("Could not open this image. Try a PNG or JPEG screenshot.", true);
       };
       image.src = objectUrl;
@@ -1648,7 +1704,32 @@
     });
     imageInput.addEventListener("change", function () {
       detectSelectedImage(imageInput.files && imageInput.files[0]);
+      imageInput.value = "";
     });
+    imagePasteButton.addEventListener("click", pasteClipboardImage);
+    dialog.addEventListener("paste", function (event) {
+      var clipboard = event.clipboardData;
+      if (!clipboard) return;
+      var files = Array.prototype.slice.call(clipboard.files || []);
+      if (!files.length) {
+        Array.prototype.forEach.call(clipboard.items || [], function (item) {
+          if (item.kind === "file") {
+            var file = item.getAsFile();
+            if (file) files.push(file);
+          }
+        });
+      }
+      if (files.length) {
+        event.preventDefault();
+        event.stopPropagation();
+        var supportedFile = files.find(isSupportedImage);
+        detectSelectedImage(supportedFile || files[0]);
+      } else if (imageImport.contains(event.target)) {
+        event.preventDefault();
+        event.stopPropagation();
+        setImageStatus(supportedImageMessage, true);
+      }
+    }, true);
     useRecognizedButton.addEventListener("click", copyRecognizedDigits);
     loadButton.addEventListener("click", loadPuzzle);
     textarea.addEventListener("input", syncTextToEditor);
